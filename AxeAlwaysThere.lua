@@ -31,6 +31,35 @@ end
 
 local tmpAxeWeap = nil
 
+sdk.hook(
+	sdk.find_type_definition("app.Em8000.Em8000DamageDecider"):get_method("getWeaponGroup"),
+	function(args) --pre
+		--[[ local dmg = { "Damage", "DamageMax", "Stun", "StunMax" }
+		local dmgInfo = sdk.to_managed_object(args[3])
+
+		for i = 1, #dmg do
+			log.debug(dmg[i] .. ": " .. sdk.to_float(dmgInfo:get_field(dmg[i])))
+		end
+
+		log.debug("") ]]
+	end,
+	function(retval)
+		log.debug("3")
+		return 3
+	end --post
+)
+
+--[[ sdk.hook(
+	sdk.find_type_definition("app.Em8000.Em8000DamageDecider"):get_method("getSmallDamageId"),
+	function(args) --pre
+
+	end,
+	function(retval)
+		log.debug("getSmallDamageId() = " .. retval)
+		return retval
+	end --post
+) ]]
+
 re.on_draw_ui(function()
 	if imgui.tree_node("Starting Axe Mod") then
 		imgui.begin_rect()
@@ -85,22 +114,20 @@ re.on_draw_ui(function()
 			if useKnifeCollision then
 				local axeHitController = axeWeap:get_field("HitController")
 				local knifeHitController = knifeWeap:get_field("HitController")
-				local fieldsToReplace = {
-					"_Damage",
-					"AttackManager",
-					"DamageManager",
-					"PressManager",
-					"CalculateAttack",
-					"CalculatePress",
-					"Colliders"
-				}
+				local fieldsToReplace = sdk.find_type_definition("app.Collision.HitController"):get_fields()
 
 				for i = 1, #fieldsToReplace do
-					axeHitController:set_field(fieldsToReplace[i], knifeHitController:get_field(fieldsToReplace[i]))
-					log.debug("Replaced " .. fieldsToReplace[i])
+					local field = fieldsToReplace[i]:get_name()
+
+					if string.find(field, "Damage") or string.find(field, "Press") then
+						axeHitController:set_field(field, knifeHitController:get_field(field))
+						log.debug("Replaced " .. field)
+					end
 				end
 
-				axeWeap.HitController = axeHitController
+
+				--[[ axe:set_field("<weapon>k__BackingField", knifeWeap)
+				axeWeap.WeaponID = "HandAxe" ]]
 			else
 				axe:set_field("<weapon>k__BackingField", tmpAxeWeap)
 			end
