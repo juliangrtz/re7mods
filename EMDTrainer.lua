@@ -62,33 +62,36 @@ function ManipulateCrateRNG(destroyedCrateType)
         end
     end
 
-    local substituteDropTableList = itemDropTableContainer:get_field("SubstituteDropTableList")
-    local substituteDropItemParams = substituteDropTableList:get_field("mItems")
-    local table = substituteDropItemParams[0]
-    local dropItemList = table:get_field("DropItemList")
-    local items = dropItemList:get_field("mItems")
+    if destroyedCrateType ~= "NORMAL" then
+        log.debug("[Ethan Must Die Trainer] Forcing weapon " .. newItem .. "...")
 
-    local index = crateIndices[destroyedCrateType] % #crateItems[destroyedCrateType] + 1
-    local newWeapon = crateItems[destroyedCrateType][index]
-    crateIndices[destroyedCrateType] = crateIndices[destroyedCrateType] + 1
-    log.debug("[Ethan Must Die Trainer] Forcing weapon " .. newWeapon .. "...")
+        local substituteDropTableList = itemDropTableContainer:get_field("SubstituteDropTableList")
+        local substituteDropItemParams = substituteDropTableList:get_field("mItems")
+        local table = substituteDropItemParams[0]
+        local dropItemList = table:get_field("DropItemList")
+        local items = dropItemList:get_field("mItems")
 
-    for j = 0, #items - 1 do
-        local item = items[j]
+        for j = 0, #items - 1 do
+            local item = items[j]
 
-        if logOriginalLootTable then
-            local itemId = item:get_field("ItemID")
-            local weaponID = item:get_field("WeaponID")
-            local stackNum = item:get_field("StackNum")
-            log.debug("(SUBSTITUTE) " .. re7utils.ItemFriendlyNames[weaponID] .. " (" .. stackNum .. " " .. itemId .. ")")
+            if logOriginalLootTable then
+                local itemId = item:get_field("ItemID")
+                local weaponID = item:get_field("WeaponID")
+                local stackNum = item:get_field("StackNum")
+                log.debug("(SUBSTITUTE) " ..
+                    re7utils.ItemFriendlyNames[weaponID] .. " (" .. stackNum .. " " .. itemId .. ")")
+            end
+
+            if re7utils.EMDWeapons[newItem] then
+                item.WeaponID = re7utils.EMDWeapons[newItem].id
+                item.ItemID = re7utils.EMDWeapons[newItem].itemID
+            else
+                item.WeaponID = newItem
+                item.ItemID = newItem
+            end
+
+            -- TODO StackNum???
         end
-
-        if destroyedCrateType == "NORMAL" then
-            item.ItemID = newWeapon
-        end
-
-        item.WeaponID = newWeapon
-        -- TODO StackNum???
     end
 end
 
@@ -99,9 +102,12 @@ re.on_draw_ui(function()
         --if imgui.button("Toggle RNG manipulation") then
         --
         --end
-
         if imgui.button("Clear debug console") then
             re7utils.clearDebugConsole()
+        end
+
+        if imgui.button("Reset forced items") then
+            crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
         end
         imgui.end_rect(2)
         imgui.tree_pop()

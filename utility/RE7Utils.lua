@@ -2,11 +2,10 @@ local re7utils = {}
 
 -- Clears the debug console's output.
 function re7utils.clearDebugConsole()
-    for _=0, 100 do
+    for _ = 0, 100 do
         log.debug("")
     end
 end
-
 
 --region Lookup tables
 re7utils.ItemFriendlyNames = {
@@ -212,33 +211,28 @@ re7utils.WeaponIDs = {
     ["EvelynRadar1"] = { name = "Eveline Strange Bottle", id = 20 },
 }
 
-re7utils.EMDWeaponIDs = {
-    Hand = 0,
-    CircularSaw = 2,
-    Handgun = 5,
-    Handgun_M19 = 6,
-    Handgun_G17 = 7,
-    Handgun_MPM = 8,
-    Handgun_Albert_Reward = 46,
-    Shotgun_M37 = 11,
-    Shotgun_M37S = 12,
-    Shotgun_DB = 13,
-    MachineGun = 14,
-    Magnum = 15,
-    GrenadeLauncher = 16,
-    Burner = 17,
-    Glasses = 19,
-    Remedy = 24,
-    EyeDrops = 25,
-    Stimulant = 26,
-    Depressant = 27,
-    MiaKnife = 42
+re7utils.EMDWeapons = {
+    Hand = { id = 0, itemID = "HandgunBulletL" },
+    CircularSaw = { id = 2, itemID = "HandgunBulletL" },
+    Handgun = { id = 5, itemID = "HandgunBulletL" },
+    Handgun_M19 = { id = 6, itemID = "HandgunBulletL" },
+    Handgun_G17 = { id = 7, itemID = "HandgunBulletL" },
+    Handgun_MPM = { id = 8, itemID = "HandgunBulletL" },
+    Handgun_Albert_Reward = { id = 46, itemID = "HandgunBulletL" },
+    Shotgun_M37 = { id = 11, itemID = "ShotgunBullet" },
+    Shotgun_M37S = { id = 12, itemID = "ShotgunBullet" },
+    Shotgun_DB = { id = 13, itemID = "ShotgunBullet" },
+    MachineGun = { id = 14, itemID = "MachineGunBullet" },
+    Magnum = { id = 15, itemID = "MagnumBullet" },
+    GrenadeLauncher = { id = 16, itemID = "FlameBulletS" },
+    Burner = { id = 17, itemID = "BurnerBullet" },
+    Glasses = { id = 17, itemID = "HandgunBulletL" },
+    Remedy = { id = 24, itemID = "HandgunBulletL" },
+    EyeDrops = { id = 25, itemID = "HandgunBulletL" },
+    Stimulant = { id = 26, itemID = "HandgunBulletL" },
+    Depressant = { id = 27, itemID = "HandgunBulletL" },
+    MiaKnife = { id = 42, itemID = "HandgunBulletL" },
 }
-
-re7utils.EMDWeaponNames = {}
-for name, id in pairs(re7utils.EMDWeaponIDs) do
-    re7utils.EMDWeaponNames[id] = name
-end
 
 re7utils.EMDItems = {
     -- TBD
