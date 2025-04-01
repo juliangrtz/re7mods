@@ -1,4 +1,15 @@
-ItemFriendlyNames = {
+local re7utils = {}
+
+-- Clears the debug console's output.
+function re7utils.clearDebugConsole()
+    for _=0, 100 do
+        log.debug("")
+    end
+end
+
+
+--region Lookup tables
+re7utils.ItemFriendlyNames = {
     -- Weapons - Melee
     ["Bar"] = "Crowbar",
     ["ChainSaw"] = "Chain Saw",
@@ -158,7 +169,7 @@ ItemFriendlyNames = {
     ["FoundFootage050"] = "Old Videotape",
 }
 
-WeaponIDs = {
+re7utils.WeaponIDs = {
     -- Weapons - Melee
     ["Bar"] = { name = "Crowbar", id = 4 },
     ["ChainSaw"] = { name = "Chain Saw", id = 29 },
@@ -201,7 +212,7 @@ WeaponIDs = {
     ["EvelynRadar1"] = { name = "Eveline Strange Bottle", id = 20 },
 }
 
-EMDWeaponIDs = {
+re7utils.EMDWeaponIDs = {
     Hand = 0,
     CircularSaw = 2,
     Handgun = 5,
@@ -224,11 +235,15 @@ EMDWeaponIDs = {
     MiaKnife = 42
 }
 
-EMDWeaponNames = {}
-for name, id in pairs(EMDWeaponIDs) do
-    EMDWeaponNames[id] = name
+re7utils.EMDWeaponNames = {}
+for name, id in pairs(re7utils.EMDWeaponIDs) do
+    re7utils.EMDWeaponNames[id] = name
 end
 
-EMDItems = {
+re7utils.EMDItems = {
     -- TBD
 }
+
+--endregion
+
+return re7utils

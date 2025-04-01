@@ -3,7 +3,7 @@ if not reframework:get_game_name() == "re7" then
     return
 end
 
-local utils = require("utility/RE7Utils")
+local re7utils = require("utility/RE7Utils")
 --local re7 = require("utility/RE7")
 local logOriginalLootTable = false
 
@@ -35,71 +35,76 @@ function ManipulateCrateRNG(destroyedCrateType)
     log.debug("[Ethan Must Die Trainer] Destroyed a " .. destroyedCrateType:lower() .. " crate.")
 
     local itemDropTableContainer = itemBoxLotteryManager:get_field("ItemDropTableContainer")
-    if destroyedCrateType == "NORMAL" then -- Items
-        local dropTableList = itemDropTableContainer:get_field("DropTableList")
-        local dropItemParams = dropTableList:get_field("mItems")
+    local dropTableList = itemDropTableContainer:get_field("DropTableList")
+    local dropItemParams = dropTableList:get_field("mItems")
 
-        local index = crateIndices[destroyedCrateType] % #crateItems[destroyedCrateType] + 1
-        local newItem = crateItems[destroyedCrateType][index]
-        crateIndices[destroyedCrateType] = crateIndices[destroyedCrateType] + 1
-        log.debug("[Ethan Must Die Trainer] Forcing item " .. newItem)
+    local index = crateIndices[destroyedCrateType] % #crateItems[destroyedCrateType] + 1
+    local newItem = crateItems[destroyedCrateType][index]
+    crateIndices[destroyedCrateType] = crateIndices[destroyedCrateType] + 1
+    log.debug("[Ethan Must Die Trainer] Forcing item " .. newItem)
 
-        for i = 0, 3 do
-            local param = dropItemParams[i]
-            local dropTableName = param:get_field("DropTableName")
-            local dropItemList = param:get_field("DropItemList")
-            local items = dropItemList:get_field("mItems")
-
-            for j = 0, #items - 1 do
-                local item = items[j]
-
-                if logOriginalLootTable then
-                    local itemId = item:get_field("ItemID")
-                    local dropRate = item:get_field("DropRate")
-                    log.debug("(" .. dropTableName .. ") " .. itemId .. ": " .. dropRate * 100 .. "%")
-                end
-
-                item.ItemID = newItem
-            end
-        end
-    else -- Weapons
-        local substituteDropTableList = itemDropTableContainer:get_field("SubstituteDropTableList")
-        local substituteDropItemParams = substituteDropTableList:get_field("mItems")
-        local table = substituteDropItemParams[0]
-        local dropItemList = table:get_field("DropItemList")
+    for i = 0, 3 do
+        local param = dropItemParams[i]
+        local dropTableName = param:get_field("DropTableName")
+        local dropItemList = param:get_field("DropItemList")
         local items = dropItemList:get_field("mItems")
-
-        local index = crateIndices[destroyedCrateType] % #crateItems[destroyedCrateType] + 1
-        local newWeapon = crateItems[destroyedCrateType][index]
-        crateIndices[destroyedCrateType] = crateIndices[destroyedCrateType] + 1
-        log.debug("[Ethan Must Die Trainer] Forcing weapon " .. newWeapon .. "...")
 
         for j = 0, #items - 1 do
             local item = items[j]
 
             if logOriginalLootTable then
                 local itemId = item:get_field("ItemID")
-                local weaponID = item:get_field("WeaponID")
-                local stackNum = item:get_field("StackNum")
-                log.debug("(SUBSTITUTE) " ..
-                    utils.ItemFriendlyNames[weaponID] .. " (" .. stackNum .. " " .. itemId .. ")")
+                local dropRate = item:get_field("DropRate")
+                log.debug("(" .. dropTableName .. ") " .. itemId .. ": " .. dropRate * 100 .. "%")
             end
 
-            item.WeaponID = newWeapon
-            -- TODO StackNum???
+            item.ItemID = newItem
         end
+    end
+
+    local substituteDropTableList = itemDropTableContainer:get_field("SubstituteDropTableList")
+    local substituteDropItemParams = substituteDropTableList:get_field("mItems")
+    local table = substituteDropItemParams[0]
+    local dropItemList = table:get_field("DropItemList")
+    local items = dropItemList:get_field("mItems")
+
+    local index = crateIndices[destroyedCrateType] % #crateItems[destroyedCrateType] + 1
+    local newWeapon = crateItems[destroyedCrateType][index]
+    crateIndices[destroyedCrateType] = crateIndices[destroyedCrateType] + 1
+    log.debug("[Ethan Must Die Trainer] Forcing weapon " .. newWeapon .. "...")
+
+    for j = 0, #items - 1 do
+        local item = items[j]
+
+        if logOriginalLootTable then
+            local itemId = item:get_field("ItemID")
+            local weaponID = item:get_field("WeaponID")
+            local stackNum = item:get_field("StackNum")
+            log.debug("(SUBSTITUTE) " .. re7utils.ItemFriendlyNames[weaponID] .. " (" .. stackNum .. " " .. itemId .. ")")
+        end
+
+        if destroyedCrateType == "NORMAL" then
+            item.ItemID = newWeapon
+        end
+
+        item.WeaponID = newWeapon
+        -- TODO StackNum???
     end
 end
 
---[[ re.on_draw_ui(function()
+re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Trainer") then
         imgui.begin_rect()
-        imgui.text("Manipulated: " .. (changeRNG and "Yes" or "No"))
-        if imgui.button("Toggle RNG manipulation") then
+        --imgui.text("Manipulated: " .. (changeRNG and "Yes" or "No"))
+        --if imgui.button("Toggle RNG manipulation") then
+        --
+        --end
 
+        if imgui.button("Clear debug console") then
+            re7utils.clearDebugConsole()
         end
         imgui.end_rect(2)
         imgui.tree_pop()
     end
     imgui.text()
-end) ]]
+end)
