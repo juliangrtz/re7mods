@@ -27,7 +27,7 @@ local function get_component(game_object, type_name)
 	return game_object:call("getComponent(System.Type)", t)
 end
 
--- Jack 2 softlock fix (I know, it's ugly...)
+
 sdk.hook(
 	sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("calcDamage"),
 	function(args) --pre
@@ -36,7 +36,7 @@ sdk.hook(
 		for i = 1, #dmg do log.debug(dmg[i] .. ": " .. dmgInfo:get_field(dmg[i])) end
 		log.debug("") ]]
 
-		local attackGameObject = dmgInfo:get_field("AttackGameObjectList")[0]
+		--[[ local attackGameObject = dmgInfo:get_field("AttackGameObjectList")[0]
 		log.debug(attackGameObject:call("get_Name"))
 
 		local itemList = sdk.get_managed_singleton("app.InventorySystem"):get_field("ActivePlayerInventory"):get_field(
@@ -56,7 +56,7 @@ sdk.hook(
 		end
 
 		dmgInfo.AttackGameObjectList[0] = knife
-		log.debug(dmgInfo.AttackGameObjectList[0]:call("get_Name"))
+		log.debug(dmgInfo.AttackGameObjectList[0]:call("get_Name")) ]]
 	end,
 	function(retval)
 		return retval
@@ -74,9 +74,8 @@ sdk.hook(
 	end --post
 ) ]]
 
---[[ local em8010Core = nil
-local em8010_type = sdk.find_type_definition("app.Em8010.Em8010Core")
-sdk.hook(em8010_type:get_method(".ctor"),
+local em8010Core = nil
+sdk.hook(sdk.find_type_definition("app.Em8010.Em8010Core"):get_method(".ctor"),
 	function(args)
 		print("Em8010Core instance created")
 		em8010Core = sdk.to_managed_object(args[2])
@@ -85,7 +84,17 @@ sdk.hook(em8010_type:get_method(".ctor"),
 		return retval
 	end
 )
- ]]
+
+sdk.hook(sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("tryOrder"),
+	function(args)
+		if em8010Core == nil then em8010Core = sdk.to_managed_object(args[2]) end
+		--print("tryOrder " .. sdk.to_managed_object(args[3]):get_field("__value"))
+	end,
+	function(retval)
+		return retval
+	end
+)
+
 re.on_draw_ui(function()
 	if imgui.tree_node("Starting Axe Mod") then
 		imgui.begin_rect()
@@ -101,6 +110,14 @@ re.on_draw_ui(function()
 					nil) -- itemDataId, amount, gunSaveData
 				-- CH9_WP006 (Dual AMG)
 				-- Handgun_Albert (wp1340_ChrisHandgun_Item)
+			end
+		end
+
+		if imgui.button("Open Core") then
+			if em8010Core then
+				em8010Core:tryOrder(1)
+			else
+				log.debug("WTF")
 			end
 		end
 
