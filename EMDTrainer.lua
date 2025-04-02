@@ -1,3 +1,5 @@
+-- IDA regex: ^app.*IMD.*
+
 if not reframework:get_game_name() == "re7" then
     log.error("[Ethan Must Die Trainer] Only compatible with RE7.")
     return
