@@ -1,6 +1,9 @@
 re7 mod ideas
 
 - dual AMG and other DLC weapons in main game
-- ethan must die RNG manip
+- ethan must die RNG manip WIP
 - ethan must die other bosses (jack3, eveline boss, mutated mia)
 - madhouse+ mode
+- skip whole ship section
+- multiplayer mode (holdout like in pd2?)
+- 21 RNG manip
