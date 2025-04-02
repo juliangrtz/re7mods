@@ -31,10 +31,10 @@ end
 sdk.hook(
 	sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("calcDamage"),
 	function(args) --pre
-		local dmg = { "Damage", "DamageMax", "Stun", "StunMax" }
 		local dmgInfo = sdk.to_managed_object(args[3])
+		--[[ local dmg = { "Damage", "DamageMax", "Stun", "StunMax" }
 		for i = 1, #dmg do log.debug(dmg[i] .. ": " .. dmgInfo:get_field(dmg[i])) end
-		log.debug("")
+		log.debug("") ]]
 
 		local attackGameObject = dmgInfo:get_field("AttackGameObjectList")[0]
 		log.debug(attackGameObject:call("get_Name"))
@@ -51,31 +51,17 @@ sdk.hook(
 			local id = item:get_field("ItemDataID")
 
 			if id == "Knife" then
-				knife = item
+				knife = items[i]:get_field("Owner")
 			end
 		end
 
-		dmgInfo.AttackGameObjectList[0] = knife:get_field("Owner")
+		dmgInfo.AttackGameObjectList[0] = knife
+		log.debug(dmgInfo.AttackGameObjectList[0]:call("get_Name"))
 	end,
 	function(retval)
-		log.debug("Core damage: " .. sdk.to_float(retval))
 		return retval
 	end
 )
-
-sdk.hook(
-	sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("get_IsEnableDamage"),
-	function(args) --pre
-
-	end,
-	function(retval)
-		local b = sdk.to_int64(retval) & 1 == 1
-		log.debug("Is enable damage: " .. tostring(b))
-		return retval
-	end
-)
-
-
 
 --[[ sdk.hook(
 	sdk.find_type_definition("app.Em8000.Em8000DamageDecider"):get_method("getSmallDamageId"),
