@@ -1,4 +1,6 @@
-package.preload[ "Damage_Numbers.config" ] = assert( (loadstring or load)( "local this = {};\
+if true then return end
+
+package.preload["Damage_Numbers.config"] = assert((loadstring or load)("local this = {};\
 local version = \"1.1\";\
 \
 local utils;\
@@ -323,9 +325,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Damage_Numbers\\config.lua" ) )
+", '@' .. ".\\Damage_Numbers\\config.lua"))
 
-package.preload[ "Damage_Numbers.customization_menu" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.customization_menu"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local config;\
@@ -697,9 +699,9 @@ function this.init_module()\
 \9this.init();\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\customization_menu.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\customization_menu.lua"))
 
-package.preload[ "Damage_Numbers.damage_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.damage_handler"] = assert((loadstring or load)("local this = {};\
 \
 local config;\
 local utils;\
@@ -949,9 +951,9 @@ function this.init_module()\
 \9end);\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\damage_handler.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\damage_handler.lua"))
 
-package.preload[ "Damage_Numbers.drawing" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.drawing"] = assert((loadstring or load)("local this = {};\
 \
 local config;\
 local utils;\
@@ -1273,9 +1275,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Damage_Numbers\\drawing.lua" ) )
+", '@' .. ".\\Damage_Numbers\\drawing.lua"))
 
-package.preload[ "Damage_Numbers.error_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.error_handler"] = assert((loadstring or load)("local this = {};\
 \
 local time;\
 local utils;\
@@ -1362,9 +1364,9 @@ function this.init_module()\
 \9config = require(\"Damage_Numbers.config\");\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\error_handler.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\error_handler.lua"))
 
-package.preload[ "Damage_Numbers.game_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.game_handler"] = assert((loadstring or load)("local this = {};\
 \
 local singletons;\
 local error_handler;\
@@ -1538,9 +1540,9 @@ function this.init_module()\
 \9end);\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\game_handler.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\game_handler.lua"))
 
-package.preload[ "Damage_Numbers.keyframe_customization" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.keyframe_customization"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local config;\
@@ -1689,9 +1691,9 @@ function this.init_module()\
 \9keyframe_handler = require(\"Damage_Numbers.keyframe_handler\");\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\keyframe_customization.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\keyframe_customization.lua"))
 
-package.preload[ "Damage_Numbers.keyframe_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.keyframe_handler"] = assert((loadstring or load)("local this = {};\
 \
 local drawing;\
 \
@@ -1851,9 +1853,9 @@ function this.init_module()\
 \9drawing = require(\"Damage_Numbers.drawing\");\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\keyframe_handler.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\keyframe_handler.lua"))
 
-package.preload[ "Damage_Numbers.player_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.player_handler"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local singletons;\
@@ -1959,9 +1961,9 @@ function this.init_module()\
 \9error_handler = require(\"Damage_Numbers.error_handler\");\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\player_handler.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\player_handler.lua"))
 
-package.preload[ "Damage_Numbers.screen" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.screen"] = assert((loadstring or load)("local this = {};\
 \
 local config;\
 local singletons;\
@@ -2073,9 +2075,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Damage_Numbers\\screen.lua" ) )
+", '@' .. ".\\Damage_Numbers\\screen.lua"))
 
-package.preload[ "Damage_Numbers.singletons" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.singletons"] = assert((loadstring or load)("local this = {};\
 \
 local customization_menu;\
 local error_handler;\
@@ -2161,9 +2163,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Damage_Numbers\\singletons.lua" ) )
+", '@' .. ".\\Damage_Numbers\\singletons.lua"))
 
-package.preload[ "Damage_Numbers.time" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.time"] = assert((loadstring or load)("local this = {};\
 \
 local singletons;\
 local customization_menu;\
@@ -2299,9 +2301,9 @@ function this.init_module()\
 \9player_handler = require(\"Damage_Numbers.player_handler\");\
 end\
 \
-return this;", '@'..".\\Damage_Numbers\\time.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\time.lua"))
 
-package.preload[ "Damage_Numbers.utils" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Damage_Numbers.utils"] = assert((loadstring or load)("local this = {};\
 \
 local sdk = sdk;\
 local tostring = tostring;\
@@ -2803,9 +2805,9 @@ unicode_map = this.unicode.map;\
 unicode_relative_position = this.unicode.relative_position;\
 unicode_chars = this.unicode.chars;\
 \
-return this;", '@'..".\\Damage_Numbers\\utils.lua" ) )
+return this;", '@' .. ".\\Damage_Numbers\\utils.lua"))
 
-assert( (loadstring or load)( "local sdk = sdk;\
+assert((loadstring or load)("local sdk = sdk;\
 local tostring = tostring;\
 local pairs = pairs;\
 local ipairs = ipairs;\
@@ -2947,5 +2949,4 @@ end);\
 -- #endregion\
 ----------------------------D2D------------------------------\
 \
-time.init_global_timers();", '@'.."Damage_Numbers.lua" ) )( ... )
-
+time.init_global_timers();", '@' .. "Damage_Numbers.lua"))(...)

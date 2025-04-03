@@ -1,5 +1,7 @@
 -- IDA regex: ^app.*IMD.*
-
+-- app_DLCContentSceneManager__addChapter3_IMD_UpLayer318169( red sky???
+-- app_DropItemPoolIMD___c__DisplayClass3_0___getTargetInstance_b__0360444 start with knife?
+-- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
 if not reframework:get_game_name() == "re7" then
     log.error("[Ethan Must Die Trainer] Only compatible with RE7.")
     return

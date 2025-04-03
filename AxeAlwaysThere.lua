@@ -1,7 +1,7 @@
---Adds the starting axe to the item box
---v1.0
---Mar 28, 2025
---by desc0le
+-- Adds the axe from the guest house to the item box.
+-- v1.1
+-- Apr 03, 2025
+-- by desc0le (Discord: jvl.1an)
 
 if not reframework:get_game_name() == "re7" then return end
 
@@ -27,12 +27,12 @@ local function get_component(game_object, type_name)
 	return game_object:call("getComponent(System.Type)", t)
 end
 
--- ###################################################
---region 		Jack 2 softlock fix
--- ###################################################
+-- region Jack 2 softlock fix
+-- Without this wacky fix, it is not possible to expose Jack's weak spot with the axe
+-- during the fight in the basement. If you figure out a better solution that is closer to
+-- Jack's original behavior feel free to contact me!
 
--- Em8010 is Jack's mutated head during the saw fight.
-local em8010Core = nil
+local em8010Core = nil -- Em8010 is Jack's mutated head (weak spot)
 sdk.hook(sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("doStart"),
 	function(args)
 		em8010Core = sdk.to_managed_object(args[2])
@@ -42,10 +42,11 @@ sdk.hook(sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("doStart")
 )
 
 local axeHits = 0
-local requiredAxeHits = 9
+local requiredAxeHits = 10
+
 sdk.hook(
 	sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("calcDamage"),
-	function(args) --pre
+	function(args)
 		local dmgInfo = sdk.to_managed_object(args[3])
 		local dmg = { "Damage", "DamageMax", "Stun", "StunMax" }
 		for i = 1, #dmg do log.debug(dmg[i] .. ": " .. dmgInfo:get_field(dmg[i])) end
@@ -62,8 +63,19 @@ sdk.hook(
 
 		if axeHits > 0 and axeHits % requiredAxeHits == 0 then
 			if em8010Core then
-				print("SHOWING JACK'S CORE!")
-				em8010Core:tryOrder(1)
+				--[[ namespace app::Em8010::Em8010Core {
+					enum Order {
+						None = 0,
+						Open = 1,
+						OpenGrapple = 2,
+						Close = 3,
+						DeactivateWithDead = 4,
+						Damage = 5,
+						CuttingFinal = 6,
+						NormalFinal = 7,
+					};
+				} ]]
+				em8010Core:tryOrder(1) -- Open
 			else
 				print("Failed to get Em8010Core!")
 			end
@@ -74,28 +86,41 @@ sdk.hook(
 	end
 )
 
--- ###################################################
---endregion
--- ###################################################
+-- endregion
 
 re.on_draw_ui(function()
-	if imgui.tree_node("Starting Axe Mod") then
+	if imgui.tree_node("Axe from guest house mod") then
 		imgui.begin_rect()
-		imgui.text("Clicking this button when you already have the axe has no effect.")
 		if imgui.button("Add axe to item box") then
 			local player = get_localplayer()
 			local inventory = get_component(player, "app.Inventory")
 			if not inventory then return end
 
-			-- itemDataId, includeItemBox
-			local hasHandAxe = inventory:call("hasItemIncludeItemBox(System.String, System.Boolean)", "HandAxe", true)
+			local handAxeItemId = "HandAxe"
+			local hasHandAxe = inventory:call("hasItemIncludeItemBox(System.String, System.Boolean)", handAxeItemId, true)
 
 			if not hasHandAxe then
 				local itemBoxData = inventory:get_field("<ItemBoxData>k__BackingField")
-				-- itemDataId, amount, gunSaveData
-				itemBoxData:call("addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)", "HandAxe", 1,
-					nil)
+				itemBoxData:call("addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)", handAxeItemId, 1, nil)
 			end
+		end
+
+		imgui.new_line()
+
+		imgui.begin_rect()
+		imgui.text(" Hits until Jack 2 reveals weak spot")
+		local changed, value = imgui.slider_int("hits", requiredAxeHits, 1, 20, nil)
+
+		if imgui.is_item_hovered() then
+			imgui.set_tooltip(
+				"Normally it is not possible to expose Jack's weak spot with the axe during the fight in the basement.\n" ..
+				"Thus, his weak spot is forced to be exposed after a certain number of hits you can define here."
+			)
+		end
+		imgui.end_rect(2)
+
+		if changed then
+			requiredAxeHits = value
 		end
 
 		imgui.end_rect(2)
