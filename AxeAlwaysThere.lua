@@ -1,5 +1,5 @@
 -- Adds the axe from the guest house to the item box.
--- v1.1
+-- v1.2
 -- Apr 03, 2025
 -- by d3sc0le (Discord: jvl.1an)
 
@@ -91,17 +91,13 @@ sdk.hook(
 local addAxe = true
 
 sdk.hook(
-	sdk.find_type_definition("app.InteractManager"):get_method("interactStart"), --app.InteractEventAction.startInteract(System.String)
-	function(args)
-		local interactObj = sdk.to_managed_object(args[3]):get_field("_InteractType")
-		log.debug(interactObj)
-
+	sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"),
+	function(_)
 		if addAxe then
-			local player = get_localplayer()
-			local inventory = get_component(player, "app.Inventory")
+			local inventory = get_component(get_localplayer(), "app.Inventory")
 			if not inventory then return end
 
-			local handAxeItemId = "HandAxe"
+			local handAxeItemId = "HandAxe" -- This could be any ItemID...
 			local hasHandAxe = inventory:call("hasItemIncludeItemBox(System.String, System.Boolean)", handAxeItemId, true)
 
 			if not hasHandAxe then
