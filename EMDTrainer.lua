@@ -2,6 +2,7 @@
 -- app_DLCContentSceneManager__addChapter3_IMD_UpLayer318169( red sky???
 -- app_DropItemPoolIMD___c__DisplayClass3_0___getTargetInstance_b__0360444 start with knife?
 -- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
+
 if not reframework:get_game_name() == "re7" then
     log.error("[Ethan Must Die Trainer] Only compatible with RE7.")
     return
@@ -18,44 +19,25 @@ sdk.hook(
     function(retval) return retval end --post
 )
 
-local function vec3tostring(vec3)
-    return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z);
-end
-
 -- This method gets called for every instantiated crate.
 local crateTransforms = {}
-local currIdx = 0
-local restoreCratePositions = false
-local currBox = nil
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
     function(args)
         local box = sdk.to_managed_object(args[3])
-        currBox = box
         local transform = box:call("get_Transform") --:call("get_Position")
-        log.debug("Box at " .. vec3tostring(transform:get_Position()))
+        log.debug("[Ethan Must Die Trainer] Box at " .. vec3tostring(transform:get_Position()))
         table.insert(crateTransforms, transform)
         --draw.sphere(pos, 10, 0xffffffff, true) -- Not working?!?
     end,
-    function(retval)
-        if restoreCratePositions then
-            local b = crateTransforms[currIdx]
-
-            if b then
-                currIdx = currIdx + 1
-                currBox:call("get_Transform"):set_Position(b:get_Position())
-            end
-        end
-        return retval
-    end
+    function(retval) return retval end
 )
 
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("doStart"),
     function(args)
         crateTransforms = {}
-        currIdx = 0
-        log.debug("Reset crate positions.")
+        log.debug("[Ethan Must Die Trainer] Reset crate positions.")
     end,
     function(retval) return retval end
 )
@@ -112,14 +94,15 @@ function ManipulateCrateRNG(destroyedCrateType)
             local item = items[j]
 
             if re7utils.EMDWeapons[newItem] then
-                item.WeaponID = re7utils.EMDWeapons[newItem].id
-                item.ItemID = re7utils.EMDWeapons[newItem].itemID
+                local wp = re7utils.EMDWeapons[newItem]
+                item.WeaponID = wp.id
+                item.ItemID = wp.itemID
+                item.StackNum = wp.stackNum
             else
+                log.debug("[Ethan Must Die Trainer] Item " .. newItem .. " not in EMDWeapons table?!")
                 item.WeaponID = newItem
                 item.ItemID = newItem
             end
-
-            -- TODO StackNum???
         end
     end
 end
@@ -150,10 +133,6 @@ re.on_draw_ui(function()
             }
 
             crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
-        end
-
-        if imgui.button("Save positions " .. (restoreCratePositions and "ON" or "OFF")) then
-            restoreCratePositions = not restoreCratePositions
         end
 
         imgui.end_rect(2)
