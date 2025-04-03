@@ -8,23 +8,40 @@ if not reframework:get_game_name() == "re7" then
 end
 
 local re7utils = require("utility/RE7Utils")
---local re7 = require("utility/RE7")
+local re7 = require("utility/RE7")
 local logOriginalLootTable = false
 
+local gameobject_get_transform = sdk.find_type_definition("via.GameObject"):get_method("get_Transform")
 -- This method gets called every time a crate is destroyed.
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("getDropItemInstance"),
-    function(args) --pre
+    function(args)
         ManipulateCrateRNG(sdk.to_managed_object(args[4]):call("ToString"))
     end,
     function(retval) return retval end --post
 )
 
+local function vec3tostring(vec3)
+    return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z);
+end
+
+-- This method gets called for every instantiated crate.
+sdk.hook(
+    sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
+    function(args)
+        local box = sdk.to_managed_object(args[3])
+        local pos = box:call("get_Transform"):call("get_Position")
+        log.debug("Box at " .. vec3tostring(pos))
+        draw.sphere(pos, 5, 0xffffffff, true)
+    end,
+    function(retval) return retval end --post
+)
+
 local crateItems = {
-    NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "RemedyL" },
-    RARE = { "Burner", "Shotgun_DB", "ShotgunBullet", "ShotgunBullet" },
-    SUPERRARE = { "MachineGun", "Handgun_M19" },
-    LEGENDARY = { "Handgun_Albert", "Magnum", "MagnumBullet" }
+    NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
+    RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
+    SUPERRARE = { "Handgun_M19", "MachineGun" },
+    LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
 }
 local crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
 
@@ -102,15 +119,32 @@ end
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Trainer") then
         imgui.begin_rect()
-        --imgui.text("Manipulated: " .. (changeRNG and "Yes" or "No"))
-        --if imgui.button("Toggle RNG manipulation") then
-        --
-        --end
-        if imgui.button("Clear debug console") then
+        
+        if imgui.button("DEV: Clear debug console") then
             re7utils.clearDebugConsole()
         end
 
-        if imgui.button("Reset forced items") then
+        if imgui.button("DEV: Log player position") then
+            log.debug(vec3tostring(re7.transform:get_Position()))
+        end
+
+        if imgui.button("Force Albert") then
+            crateItems = {
+                NORMAL = { "Handgun_Albert_Reward" },
+                RARE = { "Handgun_Albert_Reward" },
+                SUPERRARE = { "Handgun_Albert_Reward" },
+                LEGENDARY = { "Handgun_Albert_Reward" }
+            }
+        end
+
+        if imgui.button("Reset drop tables") then
+            crateItems = {
+                NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
+                RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
+                SUPERRARE = { "Handgun_M19", "MachineGun" },
+                LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
+            }
+
             crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
         end
         imgui.end_rect(2)

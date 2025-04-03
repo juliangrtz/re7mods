@@ -1,6 +1,8 @@
 -- Configurable timer for the Ethan Must Die game mode
 -- by desc0le
 
+-- app.PauseManager.PauseObject.onPause()
+
 if not reframework:get_game_name() == "re7" then
     log.error("[Ethan Must Die Timer] Only compatible with RE7, duh.")
     return
