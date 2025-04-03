@@ -8,9 +8,7 @@ if not reframework:get_game_name() == "re7" then
 end
 
 local re7utils = require("utility/RE7Utils")
-local logOriginalLootTable = false
 
-local gameobject_get_transform = sdk.find_type_definition("via.GameObject"):get_method("get_Transform")
 -- This method gets called every time a crate is destroyed.
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("getDropItemInstance"),
@@ -25,30 +23,42 @@ local function vec3tostring(vec3)
 end
 
 -- This method gets called for every instantiated crate.
-local cratePositions = {}
+local crateTransforms = {}
+local currIdx = 0
+local restoreCratePositions = false
+local currBox = nil
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
     function(args)
         local box = sdk.to_managed_object(args[3])
-        local pos = box:call("get_Transform"):call("get_Position")
-        log.debug("Box at " .. vec3tostring(pos))
-        table.insert(cratePositions, pos)
-        --draw.sphere(pos, 10, 0xffffffff, true)
+        currBox = box
+        local transform = box:call("get_Transform") --:call("get_Position")
+        log.debug("Box at " .. vec3tostring(transform:get_Position()))
+        table.insert(crateTransforms, transform)
+        --draw.sphere(pos, 10, 0xffffffff, true) -- Not working?!?
     end,
-    function(retval) return retval end
+    function(retval)
+        if restoreCratePositions then
+            local b = crateTransforms[currIdx]
+
+            if b then
+                currIdx = currIdx + 1
+                currBox:call("get_Transform"):set_Position(b:get_Position())
+            end
+        end
+        return retval
+    end
 )
 
 sdk.hook(
-    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("doAwake"),
-    function(_)
-        cratePositions = {}
+    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("doStart"),
+    function(args)
+        crateTransforms = {}
+        currIdx = 0
+        log.debug("Reset crate positions.")
     end,
     function(retval) return retval end
 )
-
-local function vec3tostring(vec3)
-    return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z);
-end
 
 local crateItems = {
     NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
@@ -85,13 +95,6 @@ function ManipulateCrateRNG(destroyedCrateType)
 
         for j = 0, #items - 1 do
             local item = items[j]
-
-            if logOriginalLootTable then
-                local itemId = item:get_field("ItemID")
-                local dropRate = item:get_field("DropRate")
-                log.debug("(" .. dropTableName .. ") " .. itemId .. ": " .. dropRate * 100 .. "%")
-            end
-
             item.ItemID = newItem
         end
     end
@@ -107,14 +110,6 @@ function ManipulateCrateRNG(destroyedCrateType)
 
         for j = 0, #items - 1 do
             local item = items[j]
-
-            if logOriginalLootTable then
-                local itemId = item:get_field("ItemID")
-                local weaponID = item:get_field("WeaponID")
-                local stackNum = item:get_field("StackNum")
-                log.debug("(SUBSTITUTE) " ..
-                    re7utils.ItemFriendlyNames[weaponID] .. " (" .. stackNum .. " " .. itemId .. ")")
-            end
 
             if re7utils.EMDWeapons[newItem] then
                 item.WeaponID = re7utils.EMDWeapons[newItem].id
@@ -156,6 +151,11 @@ re.on_draw_ui(function()
 
             crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
         end
+
+        if imgui.button("Save positions " .. (restoreCratePositions and "ON" or "OFF")) then
+            restoreCratePositions = not restoreCratePositions
+        end
+
         imgui.end_rect(2)
         imgui.tree_pop()
     end
