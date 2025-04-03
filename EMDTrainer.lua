@@ -8,7 +8,6 @@ if not reframework:get_game_name() == "re7" then
 end
 
 local re7utils = require("utility/RE7Utils")
-local re7 = require("utility/RE7")
 local logOriginalLootTable = false
 
 local gameobject_get_transform = sdk.find_type_definition("via.GameObject"):get_method("get_Transform")
@@ -26,16 +25,30 @@ local function vec3tostring(vec3)
 end
 
 -- This method gets called for every instantiated crate.
+local cratePositions = {}
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
     function(args)
         local box = sdk.to_managed_object(args[3])
         local pos = box:call("get_Transform"):call("get_Position")
         log.debug("Box at " .. vec3tostring(pos))
-        draw.sphere(pos, 5, 0xffffffff, true)
+        table.insert(cratePositions, pos)
+        --draw.sphere(pos, 10, 0xffffffff, true)
     end,
-    function(retval) return retval end --post
+    function(retval) return retval end
 )
+
+sdk.hook(
+    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("doAwake"),
+    function(_)
+        cratePositions = {}
+    end,
+    function(retval) return retval end
+)
+
+local function vec3tostring(vec3)
+    return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z);
+end
 
 local crateItems = {
     NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
@@ -119,13 +132,9 @@ end
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Trainer") then
         imgui.begin_rect()
-        
+
         if imgui.button("DEV: Clear debug console") then
             re7utils.clearDebugConsole()
-        end
-
-        if imgui.button("DEV: Log player position") then
-            log.debug(vec3tostring(re7.transform:get_Position()))
         end
 
         if imgui.button("Force Albert") then
