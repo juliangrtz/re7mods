@@ -1,7 +1,7 @@
 -- Adds the axe from the guest house to the item box.
 -- v1.1
 -- Apr 03, 2025
--- by desc0le (Discord: jvl.1an)
+-- by d3sc0le (Discord: jvl.1an)
 
 if not reframework:get_game_name() == "re7" then return end
 
@@ -88,10 +88,15 @@ sdk.hook(
 
 -- endregion
 
-re.on_draw_ui(function()
-	if imgui.tree_node("Axe from guest house mod") then
-		imgui.begin_rect()
-		if imgui.button("Add axe to item box") then
+local addAxe = true
+
+sdk.hook(
+	sdk.find_type_definition("app.InteractManager"):get_method("interactStart"), --app.InteractEventAction.startInteract(System.String)
+	function(args)
+		local interactObj = sdk.to_managed_object(args[3]):get_field("_InteractType")
+		log.debug(interactObj)
+
+		if addAxe then
 			local player = get_localplayer()
 			local inventory = get_component(player, "app.Inventory")
 			if not inventory then return end
@@ -101,10 +106,19 @@ re.on_draw_ui(function()
 
 			if not hasHandAxe then
 				local itemBoxData = inventory:get_field("<ItemBoxData>k__BackingField")
-				itemBoxData:call("addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)", handAxeItemId, 1, nil)
+				itemBoxData:call("addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)", handAxeItemId,
+					1, nil)
 			end
 		end
+	end,
+	function(retval) return retval end
+)
 
+re.on_draw_ui(function()
+	if imgui.tree_node("Axe from guest house mod") then
+		imgui.spacing()
+		imgui.begin_rect()
+		_, addAxe = imgui.checkbox("Add axe to item box", addAxe)
 		imgui.new_line()
 
 		imgui.begin_rect()
