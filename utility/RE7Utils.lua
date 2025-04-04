@@ -23,6 +23,10 @@ function re7utils.rgbToInt(r, g, b, a)
     return t
 end
 
+-- Various utility functions
+
+function re7utils.vec3tostring(vec3) return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z) end
+
 function re7utils.get_localplayer()
     local object_man = sdk.get_managed_singleton("app.ObjectManager")
 

@@ -103,6 +103,15 @@ re.on_draw_ui(function()
             }
         end
 
+        if imgui.button("Force Green house key") then
+            crateItems = {
+                NORMAL = { "GreenHouseKey" },
+                RARE = { "GreenHouseKey" },
+                SUPERRARE = { "GreenHouseKey" },
+                LEGENDARY = { "GreenHouseKey" }
+            }
+        end
+
         if imgui.button("Reset drop tables") then
             crateItems = {
                 NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
@@ -112,6 +121,24 @@ re.on_draw_ui(function()
             }
 
             crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
+        end
+
+        imgui.spacing()
+        imgui.text("TP")
+
+        if imgui.button("DEV: Log player position") then
+            log.debug(re7utils.vec3tostring(re7utils.get_localplayer():get_Transform():get_Position()))
+        end
+
+        if imgui.button("Hallway") then
+            -- (22.662031, -0.000000, 12.848048)
+            -- TODO Disable collision
+            local player = re7utils.get_localplayer()
+            local controller = re7utils.get_component(player, "via.physics.CharacterController")
+            if not player or not controller then return end
+            controller:call("warp")
+            player:get_Transform():set_Position(Vector3f.new(22.662031, 0, 12.848048))
+            controller:call("warp")
         end
 
         _, showCratePositions = imgui.checkbox("Show crate positions", showCratePositions)
@@ -125,7 +152,6 @@ end)
 
 --region DRAW CRATE POSITIONS
 
-local function vec3tostring(vec3) return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z) end
 local function getCrateLabelAndColor(name)
     if name == "sm9133_IMD_NormalBox" then
         return { label = "N", color = re7utils.rgbToInt(1, 0.984, 0, 1):int() }
