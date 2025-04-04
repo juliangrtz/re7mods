@@ -19,29 +19,6 @@ sdk.hook(
     function(retval) return retval end --post
 )
 
--- This method gets called for every instantiated crate.
-local crateTransforms = {}
-sdk.hook(
-    sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
-    function(args)
-        local box = sdk.to_managed_object(args[3])
-        local transform = box:call("get_Transform") --:call("get_Position")
-        log.debug("[Ethan Must Die Trainer] Box at " .. vec3tostring(transform:get_Position()))
-        table.insert(crateTransforms, transform)
-        --draw.sphere(pos, 10, 0xffffffff, true) -- Not working?!?
-    end,
-    function(retval) return retval end
-)
-
-sdk.hook(
-    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("doStart"),
-    function(args)
-        crateTransforms = {}
-        log.debug("[Ethan Must Die Trainer] Reset crate positions.")
-    end,
-    function(retval) return retval end
-)
-
 local crateItems = {
     NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
     RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
@@ -71,7 +48,7 @@ function ManipulateCrateRNG(destroyedCrateType)
 
     for i = 0, 3 do
         local param = dropItemParams[i]
-        local dropTableName = param:get_field("DropTableName")
+        --local dropTableName = param:get_field("DropTableName")
         local dropItemList = param:get_field("DropItemList")
         local items = dropItemList:get_field("mItems")
 
@@ -107,6 +84,8 @@ function ManipulateCrateRNG(destroyedCrateType)
     end
 end
 
+local showCratePositions = true
+
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Trainer") then
         imgui.begin_rect()
@@ -135,8 +114,63 @@ re.on_draw_ui(function()
             crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
         end
 
+        _, showCratePositions = imgui.checkbox("Show crate positions", showCratePositions)
+
         imgui.end_rect(2)
         imgui.tree_pop()
     end
-    imgui.text()
 end)
+
+
+
+--region DRAW CRATE POSITIONS
+
+local function vec3tostring(vec3) return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z) end
+local function getCrateLabelAndColor(name)
+    if name == "sm9133_IMD_NormalBox" then
+        return { label = "N", color = re7utils.rgbToInt(1, 0.984, 0, 1):int() }
+    elseif name == "sm9133_IMD_RareBox" then
+        return { label = "R", color = re7utils.rgbToInt(0, 1, 0, 1):int() }
+    elseif name == "sm9133_IMD_SuperRareBox" then
+        return { label = "S", color = re7utils.rgbToInt(1, 0, 0.894, 1):int() }
+    elseif name == "sm2619_IMD_LegendaryBox" then
+        return { label = "L", color = re7utils.rgbToInt(1, 0, 0, 1):int() }
+    else
+        log.debug(name)
+        return { label = "?", color = re7utils.rgbToInt(1, 1, 1, 1):int() }
+    end
+end
+
+local crates = {}
+sdk.hook(
+    sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
+    function(args)
+        local box = sdk.to_managed_object(args[3])
+        table.insert(crates, box)
+        --log.debug("[Ethan Must Die Trainer] Box at " ..vec3tostring(transform:get_Position()) .. " :: " .. box:get_Name())
+    end,
+    function(retval) return retval end
+)
+
+sdk.hook(
+    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("onDestroy"),
+    function(_)
+        crates = {}
+        re7utils.clearDebugConsole()
+    end,
+    function(retval) return retval end
+)
+
+re.on_frame(function()
+    if not showCratePositions or not next(crates) then return end
+
+    for i = 1, #crates - 1 do
+        local crate = crates[i]
+        local crateName = crate:get_Name()
+        local labelColorPair = getCrateLabelAndColor(crateName)
+        --print(crateName .. " " .. labelColorPair.label .. ":" .. string.format("%x", labelColorPair.color))
+        draw.world_text(labelColorPair.label, crate:get_Transform():get_Position(), labelColorPair.color)
+    end
+end)
+
+--endregion

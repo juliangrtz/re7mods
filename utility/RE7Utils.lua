@@ -2,9 +2,47 @@ local re7utils = {}
 
 -- Clears the debug console's output.
 function re7utils.clearDebugConsole()
-    for _ = 0, 100 do
-        log.debug("")
+    for _ = 0, 100 do log.debug("") end
+end
+
+-- For the draw API
+function re7utils.rgbToInt(r, g, b, a)
+    local t = {
+        R = r,
+        G = g,
+        B = b,
+        A = a,
+        int = function(self)
+            return math.floor(self.A * 255) * 16777216 +
+                math.floor(self.B * 255) * 65536 +
+                math.floor(self.G * 255) * 256 +
+                math.floor(self.R * 255)
+        end
+    }
+
+    return t
+end
+
+function re7utils.get_localplayer()
+    local object_man = sdk.get_managed_singleton("app.ObjectManager")
+
+    if not object_man then
+        return nil
     end
+
+    return object_man:get_field("PlayerObj")
+end
+
+local known_typeofs = {}
+function re7utils.get_component(game_object, type_name)
+    local t = known_typeofs[type_name] or sdk.typeof(type_name)
+
+    if t == nil then
+        return nil
+    end
+
+    known_typeofs[type_name] = t
+    return game_object:call("getComponent(System.Type)", t)
 end
 
 --region Lookup tables
@@ -227,6 +265,8 @@ re7utils.EMDWeapons = {
     Burner = { id = 17, itemID = "BurnerBullet", stackNum = 100 },
     Glasses = { id = 17, itemID = "HandgunBulletL", stackNum = 4 },
     Remedy = { id = 24, itemID = "HandgunBulletL", stackNum = 4 },
+    RemedyL = { id = 0, itemID = "HandgunBulletL", stackNum = 4 },
+    HandgunBulletL = { id = 0, itemID = "HandgunBulletL", stackNum = 4 },
     EyeDrops = { id = 25, itemID = "HandgunBulletL", stackNum = 4 },
     Stimulant = { id = 26, itemID = "HandgunBulletL", stackNum = 4 },
     Depressant = { id = 27, itemID = "HandgunBulletL", stackNum = 4 },
@@ -238,5 +278,7 @@ re7utils.EMDItems = {
 }
 
 --endregion
+
+
 
 return re7utils
