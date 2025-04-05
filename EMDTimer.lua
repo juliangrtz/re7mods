@@ -1,17 +1,18 @@
--- Configurable timer for the Ethan Must Die game mode
--- by desc0le
+-- Timer for the Ethan Must Die game mode. It's displayed in the top left corner of the screen.
+-- by d3sc0le
+-- v1.0
 
 if not reframework:get_game_name() == "re7" then
-    log.error("[Ethan Must Die Timer] Only compatible with RE7, duh.")
+    re.msg("[Ethan Must Die Timer] Only compatible with RE7!")
     return
 end
 
 local igt
-local hrs, mins, secs, me
+local hrs, mins, secs, ms
 local stopped
 
 sdk.hook(
-    sdk.find_type_definition("app.InGameTimerForIMD"):get_method("start"),
+    sdk.find_type_definition("app.InGameTimerForIMD"):get_method("tStart"),
     function(args)
         stopped = false
         igt = sdk.to_managed_object(args[2])
@@ -20,8 +21,10 @@ sdk.hook(
 )
 
 sdk.hook(
-    sdk.find_type_definition("app.InGameTimerForIMD"):get_method("stop"),
-    function(_) stopped = true end,
+    sdk.find_type_definition("app.Chapter3_IMD_Result"):get_method("onOpen"),
+    function(_)
+        stopped = true
+    end,
     function(r) return r end
 )
 
@@ -50,7 +53,6 @@ re.on_frame(
             mins = igt and igt:call("getCurrentMinutes") or 0
             secs = igt and igt:call("getCurrentSeconds") or 0
             ms = igt and igt:call("getCurrentMilliseconds") or 0
-            --log.debug(formatTime(hrs, mins, secs, ms))
             draw.text(formatTime(hrs, mins, secs, ms), 0, 0, 0xFFFFFFFF)
         end
     end

@@ -4,6 +4,11 @@
 -- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
 -- Enemy spawning: app.EnemyGeneratorManager.requestSpawn()
 
+--[[
+    (-4.831269, 0.835502, 44.972279) near spawn
+    (-3.277556, -1.154342, 21.520510) stairs
+]]
+
 if not reframework:get_game_name() == "re7" then --or sdk.get_tdb_version() ~= 70 then
     re.msg("[Ethan Must Die Mods] Only compatible with RE7!")
     return
@@ -119,6 +124,15 @@ re.on_draw_ui(function()
 
             if imgui.button("Clear debug console") then
                 re7utils.clearDebugConsole()
+            end
+
+            if imgui.button("Albert > Infinite Ammo > Heal") then
+                crateItems = {
+                    NORMAL = { "Handgun_Albert_Reward", "UnlimitedAmmo", "RemedyL", },
+                    RARE = { "Handgun_Albert_Reward", "UnlimitedAmmo", "RemedyL", },
+                    SUPERRARE = { "Handgun_Albert_Reward", "UnlimitedAmmo", "RemedyL", },
+                    LEGENDARY = { "Handgun_Albert_Reward", "UnlimitedAmmo", "RemedyL", },
+                }
             end
 
             imgui.tree_pop()
