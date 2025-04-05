@@ -165,6 +165,10 @@ re.on_draw_ui(function()
 
         if imgui.tree_node("Crate positions") then
             _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
+            imgui.text("N = Normal (1 star)")
+            imgui.text("R = Rare (2 stars)")
+            imgui.text("S = Super rare (3 stars)")
+            imgui.text("L = Legendary (4 stars)")
             imgui.tree_pop()
         end
 
