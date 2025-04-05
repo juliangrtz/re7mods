@@ -1,5 +1,5 @@
 -- IDA regex: ^app.*IMD.*
--- app_DLCContentSceneManager__addChapter3_IMD_UpLayer318169( red sky???
+-- app_DLCContentSceneManager__addChapter3_IMD_UpLayer318169( red sky?
 -- app_DropItemPoolIMD___c__DisplayClass3_0___getTargetInstance_b__0360444 start with knife?
 -- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
 -- Enemy spawning: app.EnemyGeneratorManager.requestSpawn()
@@ -9,15 +9,20 @@ if not reframework:get_game_name() == "re7" then
     return
 end
 
+-- region Settings
 local default_settings = {
-    showCratePositions = true
+    showCratePositions = true,
+    detailedLogging = false
 }
+
 local settings = json.load_file("EthanMustDieSettings.json") or {}
+
 for k, v in pairs(default_settings) do
     if settings[k] == nil then
         settings[k] = v
     end
 end
+--endregion
 
 local re7utils = require("utility/RE7Utils")
 local crates = {}
@@ -28,7 +33,6 @@ local crateItems = {
     LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
 }
 local crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
-local showCratePositions = true
 
 local function manipulateCrateRNG(destroyedCrateType)
     local itemBoxLotteryManager = sdk.get_managed_singleton("app.ItemBoxLotteryManagerIMD")
@@ -107,19 +111,22 @@ end
 
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Mods") then
-        imgui.begin_rect()
+        if imgui.tree_node("Developer Tools") then
+            _, settings.detailedLogging = imgui.checkbox("Detailed logging", settings.detailedLogging)
 
-        if imgui.button("DEV: Clear debug console") then
-            re7utils.clearDebugConsole()
+            if imgui.button("Log player position") then
+                log.debug(re7utils.vec3tostring(re7utils.get_localplayer():get_Transform():get_Position()))
+            end
+
+            if imgui.button("Clear debug console") then
+                re7utils.clearDebugConsole()
+            end
         end
+        imgui.begin_rect()
 
         if imgui.button("Force Albert") then
             forceItem("Handgun_Albert_Reward")
         end
-
-        --[[ if imgui.button("Force Green house key") then
-            forceItem("GreenHouseKey")
-        end ]]
 
         if imgui.button("Reset drop tables") then
             crateItems = {
@@ -133,11 +140,7 @@ re.on_draw_ui(function()
         end
 
         imgui.spacing()
-        imgui.text("TP")
-
-        if imgui.button("DEV: Log player position") then
-            log.debug(re7utils.vec3tostring(re7utils.get_localplayer():get_Transform():get_Position()))
-        end
+        imgui.text("Teleportation")
 
         if imgui.button("Hallway") then
             -- Big lobby: (-0.622532, -0.000000, 11.295543)
@@ -206,7 +209,7 @@ sdk.hook(
 )
 
 re.on_frame(function()
-    if not showCratePositions or not next(crates) then return end
+    if not settings.showCratePositions or not next(crates) then return end
 
     for i = 1, #crates - 1 do
         local crate = crates[i]

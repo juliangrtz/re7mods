@@ -8,11 +8,8 @@ if not reframework:get_game_name() == "re7" then
     return
 end
 
-local enabled = false
 local igt = nil
 local stopped = false
-
-if not enabled then return end
 
 sdk.hook(
     sdk.find_type_definition("app.InGameTimerForIMD"):get_method("start"),
@@ -24,12 +21,12 @@ sdk.hook(
 )
 
 sdk.hook(
-    sdk.find_type_definition("app.InGameTimerForIMD"):get_method("stop"),
+    sdk.find_type_definition("app.InGameTimerForIMD"):get_method("onDestroy"),
     function(_) stopped = true end,
     function(r) return r end
 )
 
-function formatTime(hours, minutes, seconds, milliseconds)
+local function formatTime(hours, minutes, seconds, milliseconds)
     if hours > 0 then
         return string.format("%02d:%02d:%02d:%03d", hours, minutes, seconds, milliseconds)
     else

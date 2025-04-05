@@ -33,6 +33,15 @@ end
 
 function re7utils.vec3tostring(vec3) return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z) end
 
+function re7utils.teleportPlayer(pos)
+    local player = re7utils.get_localplayer()
+    local controller = re7utils.get_component(player, "via.physics.CharacterController")
+    if not player or not controller then return end
+    controller:call("warp")
+    player:get_Transform():set_Position(pos)
+    controller:call("warp")
+end
+
 function re7utils.get_localplayer()
     local object_man = sdk.get_managed_singleton("app.ObjectManager")
 
