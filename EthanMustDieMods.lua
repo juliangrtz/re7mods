@@ -93,7 +93,7 @@ local function manipulateCrateRNG(destroyedCrateType)
                 item.ItemID = wp.itemID
                 item.StackNum = wp.stackNum
             else
-                log.debug("[Ethan Must Die Mods] Item " .. newItem .. " not in EMDWeapons table?!")
+                --log.debug("[Ethan Must Die Mods] Item " .. newItem .. " not in EMDWeapons table?!")
                 item.WeaponID = newItem
                 item.ItemID = newItem
             end
@@ -126,12 +126,20 @@ re.on_draw_ui(function()
 
         if imgui.tree_node("Force specific items") then
             if imgui.button("Albert") then forceItem("Handgun_Albert_Reward") end; imgui.same_line()
-            if imgui.button("Healing") then forceItem("RemedyL") end; imgui.same_line()
-            if imgui.button("Steroids") then forceItem("Stimulant") end;
-            if imgui.button("Key") then forceItem("GreenHouseKey") end;
+            if imgui.button("Burner") then forceItem("Burner") end; imgui.same_line()
+            if imgui.button("M19") then forceItem("Handgun_M19") end; imgui.same_line()
+            if imgui.button("MPM") then forceItem("Handgun_MPM") end; imgui.same_line()
+            if imgui.button("P19") then forceItem("MachineGun") end;
+            if imgui.button("44 MAG") then forceItem("Magnum") end; imgui.same_line()
+            if imgui.button("M21") then forceItem("Shotgun_DB") end; imgui.same_line()
+            if imgui.button("M37") then forceItem("Shotgun_M37") end; imgui.same_line()
+            if imgui.button("Heal") then forceItem("RemedyL") end; imgui.same_line()
+            if imgui.button("Roids") then forceItem("Stimulant") end;
+            if imgui.button("Key") then forceItem("GreenHouseKey") end; imgui.same_line()
+            if imgui.button("Unlimited Ammo") then forceItem("UnlimitedAmmo") end;
 
+            for _ = 0, 3 do imgui.spacing() end
 
-            imgui.spacing()
             if imgui.button("Reset drop tables") then
                 crateItems = {
                     NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
