@@ -229,7 +229,7 @@ re.on_draw_ui(function()
 		changed, re7csettings.auto_skip = imgui.checkbox("Auto Skip", re7csettings.auto_skip); cs()
 		if imgui.is_item_hovered() then
 			imgui.set_tooltip(re7csettings.auto_skip and "Skip all cutscenes automatically" or
-			"Hold SPACE to skip a cutscene")
+				"Hold SPACE to skip a cutscene")
 		end
 		--changed, re7csettings.stop_all_audio = imgui.checkbox("Stop All Audio on Skip", re7csettings.stop_all_audio);  cs()
 		imgui.end_rect(3)
@@ -261,7 +261,7 @@ local function change_speed(is_skipping, tbl)
 		stop_wwise = stop_wwise or function()
 			if os.clock() - timer < 0.75 then return end
 			local try, wwises = pcall(scene.call, scene, "findComponents(System.Type)",
-				sdk.typeof("via.wwise.WwiseContainer"))                                                                --
+				sdk.typeof("via.wwise.WwiseContainer")) --
 			if try and wwises and wwises.get_elements then
 				for i, wwise in ipairs(wwises:get_elements()) do
 					stop_wwise = nil
@@ -287,7 +287,6 @@ re.on_frame(function()
 	tics = tics + 1
 
 	if tics > 1 and re7csettings.mod_enabled then
-		if sdk.typeof("app.SaveDataManager") == nil then return end
 		save_mgr = scene:call("findGameObject(System.String)", "SystemObject"):call("getComponent(System.Type)",
 			sdk.typeof("app.SaveDataManager"))
 
@@ -349,7 +348,7 @@ re.on_frame(function()
 					if is_skipping then change_speed(true) end
 				elseif do_auto_skip or (message_display_timer and os.clock() - message_display_timer < 1.0) then
 					local size = sdk.call_native_func(
-					sdk.call_native_func(scene_manager, sdk.find_type_definition("via.SceneManager"), "get_MainView"),
+						sdk.call_native_func(scene_manager, sdk.find_type_definition("via.SceneManager"), "get_MainView"),
 						sdk.find_type_definition("via.SceneView"), "get_Size")
 					size = { w = size:get_field("w"), h = size:get_field("h") }
 					imgui.set_next_window_pos({ size.w / 2 + ((size.w / 8) * -0.33), 0 }, 3, { 0, 0 })

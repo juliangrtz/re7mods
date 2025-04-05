@@ -4,21 +4,12 @@
 -- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
 
 if not reframework:get_game_name() == "re7" then
-    log.error("[Ethan Must Die Trainer] Only compatible with RE7.")
+    log.error("[Ethan Must Die Mods] Only compatible with RE7.")
     return
 end
 
 local re7utils = require("utility/RE7Utils")
-
--- This method gets called every time a crate is destroyed.
-sdk.hook(
-    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("getDropItemInstance"),
-    function(args)
-        ManipulateCrateRNG(sdk.to_managed_object(args[4]):call("ToString"))
-    end,
-    function(retval) return retval end --post
-)
-
+local crates = {}
 local crateItems = {
     NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
     RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
@@ -26,16 +17,17 @@ local crateItems = {
     LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
 }
 local crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
+local showCratePositions = true
 
-function ManipulateCrateRNG(destroyedCrateType)
+local function manipulateCrateRNG(destroyedCrateType)
     local itemBoxLotteryManager = sdk.get_managed_singleton("app.ItemBoxLotteryManagerIMD")
 
     if not itemBoxLotteryManager then
-        log.error("[Ethan Must Die Trainer] Cannot manipulate RNG: Not playing Ethan Must Die!")
+        log.error("[Ethan Must Die Mods] Cannot manipulate RNG: Not playing Ethan Must Die!")
         return
     end
 
-    log.debug("[Ethan Must Die Trainer] Destroyed a " .. destroyedCrateType:lower() .. " crate.")
+    log.debug("[Ethan Must Die Mods] Destroyed a " .. destroyedCrateType:lower() .. " crate.")
 
     local itemDropTableContainer = itemBoxLotteryManager:get_field("ItemDropTableContainer")
     local dropTableList = itemDropTableContainer:get_field("DropTableList")
@@ -44,7 +36,7 @@ function ManipulateCrateRNG(destroyedCrateType)
     local index = crateIndices[destroyedCrateType] % #crateItems[destroyedCrateType] + 1
     local newItem = crateItems[destroyedCrateType][index]
     crateIndices[destroyedCrateType] = crateIndices[destroyedCrateType] + 1
-    log.debug("[Ethan Must Die Trainer] Forcing item " .. newItem)
+    log.debug("[Ethan Must Die Mods] Forcing item " .. newItem)
 
     for i = 0, 3 do
         local param = dropItemParams[i]
@@ -59,7 +51,7 @@ function ManipulateCrateRNG(destroyedCrateType)
     end
 
     if destroyedCrateType ~= "NORMAL" then
-        log.debug("[Ethan Must Die Trainer] Forcing weapon " .. newItem .. "...")
+        log.debug("[Ethan Must Die Mods] Forcing weapon " .. newItem .. "...")
 
         local substituteDropTableList = itemDropTableContainer:get_field("SubstituteDropTableList")
         local substituteDropItemParams = substituteDropTableList:get_field("mItems")
@@ -76,7 +68,7 @@ function ManipulateCrateRNG(destroyedCrateType)
                 item.ItemID = wp.itemID
                 item.StackNum = wp.stackNum
             else
-                log.debug("[Ethan Must Die Trainer] Item " .. newItem .. " not in EMDWeapons table?!")
+                log.debug("[Ethan Must Die Mods] Item " .. newItem .. " not in EMDWeapons table?!")
                 item.WeaponID = newItem
                 item.ItemID = newItem
             end
@@ -84,7 +76,23 @@ function ManipulateCrateRNG(destroyedCrateType)
     end
 end
 
-local showCratePositions = true
+-- This method gets called every time a crate is destroyed.
+sdk.hook(
+    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("getDropItemInstance"),
+    function(args)
+        manipulateCrateRNG(sdk.to_managed_object(args[4]):call("ToString"))
+    end,
+    function(retval) return retval end --post
+)
+
+local function forceItem(id)
+    crateItems = {
+        NORMAL = { id },
+        RARE = { id },
+        SUPERRARE = { id },
+        LEGENDARY = { id }
+    }
+end
 
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Mods") then
@@ -95,22 +103,12 @@ re.on_draw_ui(function()
         end
 
         if imgui.button("Force Albert") then
-            crateItems = {
-                NORMAL = { "Handgun_Albert_Reward" },
-                RARE = { "Handgun_Albert_Reward" },
-                SUPERRARE = { "Handgun_Albert_Reward" },
-                LEGENDARY = { "Handgun_Albert_Reward" }
-            }
+            forceItem("Handgun_Albert_Reward")
         end
 
-        if imgui.button("Force Green house key") then
-            crateItems = {
-                NORMAL = { "GreenHouseKey" },
-                RARE = { "GreenHouseKey" },
-                SUPERRARE = { "GreenHouseKey" },
-                LEGENDARY = { "GreenHouseKey" }
-            }
-        end
+        --[[ if imgui.button("Force Green house key") then
+            forceItem("GreenHouseKey")
+        end ]]
 
         if imgui.button("Reset drop tables") then
             crateItems = {
@@ -131,13 +129,21 @@ re.on_draw_ui(function()
         end
 
         if imgui.button("Hallway") then
-            -- (22.662031, -0.000000, 12.848048)
+            -- Big lobby: (-0.622532, -0.000000, 11.295543)
+            -- Basement: (-19.955242, -5.250000, 12.617932)
+
+
+
+            -- Hallway: (22.662031, 0, 12.848048)
+
+
+
             -- TODO Disable collision
             local player = re7utils.get_localplayer()
             local controller = re7utils.get_component(player, "via.physics.CharacterController")
             if not player or not controller then return end
             controller:call("warp")
-            player:get_Transform():set_Position(Vector3f.new(22.662031, 0, 12.848048))
+            player:get_Transform():set_Position(Vector3f.new(-0.622532, -0.000000, 11.295543))
             controller:call("warp")
         end
 
@@ -147,8 +153,6 @@ re.on_draw_ui(function()
         imgui.tree_pop()
     end
 end)
-
-
 
 --region DRAW CRATE POSITIONS
 
@@ -167,13 +171,12 @@ local function getCrateLabelAndColor(name)
     end
 end
 
-local crates = {}
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
     function(args)
         local box = sdk.to_managed_object(args[3])
         table.insert(crates, box)
-        --log.debug("[Ethan Must Die Trainer] Box at " ..vec3tostring(transform:get_Position()) .. " :: " .. box:get_Name())
+        log.debug("[Ethan Must Die Mods] Box at " ..vec3tostring(transform:get_Position()) .. " :: " .. box:get_Name())
     end,
     function(retval) return retval end
 )
