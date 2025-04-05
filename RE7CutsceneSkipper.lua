@@ -299,7 +299,7 @@ re.on_frame(function()
 
 		if tv then
 			local video_ctrl = tv:call("getComponent(System.Type)", sdk.typeof("app.VideoControl"))
-			if video_ctrl and video_ctrl:call("getMovieState") == 2 then
+			if video_ctrl and video_ctrl:call("getMovieState") == 2 then -- via::movie::Movie -> PlayState
 				cutscene_obj = video_ctrl
 			end
 		end
