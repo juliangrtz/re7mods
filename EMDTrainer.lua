@@ -87,7 +87,7 @@ end
 local showCratePositions = true
 
 re.on_draw_ui(function()
-    if imgui.tree_node("Ethan Must Die Trainer") then
+    if imgui.tree_node("Ethan Must Die Mods") then
         imgui.begin_rect()
 
         if imgui.button("DEV: Clear debug console") then

@@ -11,9 +11,12 @@ end
 local scene
 scene_timer = 0
 while scene_timer < 100 and not pcall(function()
-	scene = sdk.call_native_func(sdk.get_native_singleton("via.SceneManager"), sdk.find_type_definition("via.SceneManager"), "get_CurrentScene()")
-	scene_timer = nil
-end) do scene_timer = scene_timer + 1 end
+		scene = sdk.call_native_func(sdk.get_native_singleton("via.SceneManager"),
+			sdk.find_type_definition("via.SceneManager"), "get_CurrentScene()")
+		scene_timer = nil
+	end) do
+	scene_timer = scene_timer + 1
+end
 
 local message_display_timer
 local cutscene_obj, cs_gameobj
@@ -164,7 +167,7 @@ local default_settings = {
 local re7csettings = json.load_file("RE7CutsceneSkipperSettings.json") or {}
 
 for k, v in pairs(default_settings) do
-	if re7csettings[k] == nil then 
+	if re7csettings[k] == nil then
 		re7csettings[k] = v
 	end
 end
@@ -180,16 +183,16 @@ local keys = {
 }
 
 local kb_state = {
-    down = {
-        [keys.Enter] = false,
+	down = {
+		[keys.Enter] = false,
 		[keys.Space] = false,
 	},
-    released = {
-        [keys.Enter] = false,
+	released = {
+		[keys.Enter] = false,
 		[keys.Space] = false,
-    },
-    timers = {
-        [keys.Enter] = os.clock(),
+	},
+	timers = {
+		[keys.Enter] = os.clock(),
 		[keys.Space] = os.clock(),
 	},
 }
@@ -198,9 +201,8 @@ local kb_typedef = sdk.find_type_definition("via.hid.Keyboard")
 local gp_typedef = sdk.find_type_definition("via.hid.GamePad")
 
 re.on_application_entry("UpdateHID", function()
-	
 	local kb = sdk.call_native_func(sdk.get_native_singleton("via.hid.Keyboard"), kb_typedef, "get_Device")
-	if kb then 
+	if kb then
 		local time = os.clock()
 		for key, state in pairs(kb_state.down) do
 			kb_state.down[key] = kb:call("isDown", key)
@@ -212,7 +214,6 @@ re.on_application_entry("UpdateHID", function()
 			kb_state.timers[key] = ((kb_state.down[key] or kb_state.released[key]) and kb_state.timers[key]) or time
 		end
 	end
-	
 end)
 
 local function cs()
@@ -220,25 +221,25 @@ local function cs()
 end
 
 re.on_draw_ui(function()
-	
 	was_changed = false
 	if imgui.tree_node("RE7 Cutscene Skipper") then
 		imgui.spacing()
 		imgui.begin_rect()
-			changed, re7csettings.mod_enabled = imgui.checkbox("Enabled", re7csettings.mod_enabled);  cs()
-			changed, re7csettings.auto_skip = imgui.checkbox("Auto Skip", re7csettings.auto_skip);  cs()
-			if imgui.is_item_hovered() then
-				imgui.set_tooltip(re7csettings.auto_skip and "Skip all cutscenes automatically" or "Hold SPACE to skip a cutscene")
-			end
-			--changed, re7csettings.stop_all_audio = imgui.checkbox("Stop All Audio on Skip", re7csettings.stop_all_audio);  cs()
+		changed, re7csettings.mod_enabled = imgui.checkbox("Enabled", re7csettings.mod_enabled); cs()
+		changed, re7csettings.auto_skip = imgui.checkbox("Auto Skip", re7csettings.auto_skip); cs()
+		if imgui.is_item_hovered() then
+			imgui.set_tooltip(re7csettings.auto_skip and "Skip all cutscenes automatically" or
+			"Hold SPACE to skip a cutscene")
+		end
+		--changed, re7csettings.stop_all_audio = imgui.checkbox("Stop All Audio on Skip", re7csettings.stop_all_audio);  cs()
 		imgui.end_rect(3)
 		imgui.tree_pop()
 	end
-	
+
 	if was_changed then
 		json.dump_file("RE7CutsceneSkipperSettings.json", re7csettings)
 	end
-	
+
 	imgui.text()
 end)
 
@@ -255,21 +256,22 @@ local function change_speed(is_skipping, tbl)
 		else
 			scene:call("set_TimeScale(System.Single)", tbl and tbl.speed or 100.1)
 		end
-		
+
 		local timer = os.clock()
 		stop_wwise = stop_wwise or function()
 			if os.clock() - timer < 0.75 then return end
-			local try, wwises = pcall(scene.call, scene, "findComponents(System.Type)", sdk.typeof("via.wwise.WwiseContainer")) --
+			local try, wwises = pcall(scene.call, scene, "findComponents(System.Type)",
+				sdk.typeof("via.wwise.WwiseContainer"))                                                                --
 			if try and wwises and wwises.get_elements then
-				for i, wwise in ipairs(wwises:get_elements()) do 
+				for i, wwise in ipairs(wwises:get_elements()) do
 					stop_wwise = nil
 					if re7csettings.stop_all_audio then
 						wwise:call("stopAll()")
 					else
-						for c=0, wwise:call("getContainableAssetCount")-1 do
+						for c = 0, wwise:call("getContainableAssetCount") - 1 do
 							local asset = wwise:call("getContainableAsset", c)
 							local asset_path = asset and asset:call("get_ResourcePath")
-							if asset_path and asset_path:lower():find("event") then 
+							if asset_path and asset_path:lower():find("event") then
 								wwise:call("stopAll()")
 								break
 							end
@@ -282,54 +284,52 @@ local function change_speed(is_skipping, tbl)
 end
 
 re.on_frame(function()
-	
-	tics = tics  + 1
-	
+	tics = tics + 1
+
 	if tics > 1 and re7csettings.mod_enabled then
-	
-		save_mgr = scene:call("findGameObject(System.String)", "SystemObject"):call("getComponent(System.Type)", sdk.typeof("app.SaveDataManager"))
-		
+		if sdk.typeof("app.SaveDataManager") == nil then return end
+		save_mgr = scene:call("findGameObject(System.String)", "SystemObject"):call("getComponent(System.Type)",
+			sdk.typeof("app.SaveDataManager"))
+
 		local current_speed = scene:call("get_TimeScale()") or 1.0
 		is_skipping = (current_speed > 50.0)
-		
+
 		player_cam = scene:call("findComponents(System.Type)", sdk.typeof("app.PlayerCamera"))[0]
 		player_gameobj = player_cam and player_cam:call("get_GameObject")
 		tv = (player_gameobj and not cutscene_obj) and scene:call("findGameObject(System.String)", "movieBox_640_480")
-		
+
 		if tv then
 			local video_ctrl = tv:call("getComponent(System.Type)", sdk.typeof("app.VideoControl"))
 			if video_ctrl and video_ctrl:call("getMovieState") == 2 then
 				cutscene_obj = video_ctrl
 			end
 		end
-		
+
 		if cutscene_obj then
-			
 			cs_gameobj = cutscene_obj:call("get_GameObject")
 			last_cs_name = cs_name
 			cs_name = cs_gameobj:call("get_Name"):gsub("_Controller", "")
 			last_cs_name = last_cs_name or cs_name
-			local cs_updated = (last_cs_name~=cs_name)
-			
+			local cs_updated = (last_cs_name ~= cs_name)
+
 			space_key_down_time = os.clock() - kb_state.timers[keys.Space]
 			message_display_timer = (kb_state.down[keys.Space] and os.clock()) or message_display_timer
 			local tbl = cutscenes_dict[cs_name] or {}
-			
+
 			save_mgr:set_field("_IsPlayTimePause", true)
 			paused_playtime = true
-			
+
 			--imgui.text(cs_name)
-			
+
 			if tbl.active or tv then
-				
 				local do_auto_skip = re7csettings.auto_skip and not tbl.no_auto
-				
+
 				local can_continue = true
 				if tbl.delay then
 					cs_timer = cs_timer or os.clock()
 					can_continue = (os.clock() - cs_timer > tbl.delay)
 				end
-				--[[if player_gameobj then 
+				--[[if player_gameobj then
 					local gun = player_gameobj:call("getComponent(System.Type)", sdk.typeof("app.PlayerGun"))
 					if gun and gun:call("get_isAttackAcceptedStatus") then
 						can_continue = false
@@ -343,15 +343,17 @@ re.on_frame(function()
 						can_continue = false
 					end
 				end]]
-				
+
 				if not can_continue then
 					--imgui.text("Can't continue")
 					if is_skipping then change_speed(true) end
 				elseif do_auto_skip or (message_display_timer and os.clock() - message_display_timer < 1.0) then
-					local size = sdk.call_native_func(sdk.call_native_func(scene_manager, sdk.find_type_definition("via.SceneManager"), "get_MainView"), sdk.find_type_definition("via.SceneView"), "get_Size")
-					size = {w=size:get_field("w"),h=size:get_field("h")}
-					imgui.set_next_window_pos({size.w/2 + ((size.w/8)*-0.33), 0}, 3, {0,0})
-					imgui.set_next_window_size({300, 24}, 3)
+					local size = sdk.call_native_func(
+					sdk.call_native_func(scene_manager, sdk.find_type_definition("via.SceneManager"), "get_MainView"),
+						sdk.find_type_definition("via.SceneView"), "get_Size")
+					size = { w = size:get_field("w"), h = size:get_field("h") }
+					imgui.set_next_window_pos({ size.w / 2 + ((size.w / 8) * -0.33), 0 }, 3, { 0, 0 })
+					imgui.set_next_window_size({ 300, 24 }, 3)
 					imgui.begin_window("RE7 Cutscene Skipper", true, 129)
 					if not do_auto_skip then
 						imgui.text("Hold SPACE to Skip")
@@ -363,7 +365,7 @@ re.on_frame(function()
 			elseif is_skipping then
 				change_speed(true)
 			end
-			
+
 			imgui.end_window()
 		else
 			timer = nil
