@@ -24,6 +24,7 @@ for k, v in pairs(default_settings) do
 end
 --endregion
 
+local restartControl
 local re7utils = require("utility/RE7Utils")
 local crates = {}
 local crateItems = {
@@ -33,6 +34,15 @@ local crateItems = {
     LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
 }
 local crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
+
+local function forceItem(id)
+    crateItems = {
+        NORMAL = { id },
+        RARE = { id },
+        SUPERRARE = { id },
+        LEGENDARY = { id }
+    }
+end
 
 local function manipulateCrateRNG(destroyedCrateType)
     local itemBoxLotteryManager = sdk.get_managed_singleton("app.ItemBoxLotteryManagerIMD")
@@ -91,17 +101,12 @@ local function manipulateCrateRNG(destroyedCrateType)
     end
 end
 
-local function forceItem(id)
-    crateItems = {
-        NORMAL = { id },
-        RARE = { id },
-        SUPERRARE = { id },
-        LEGENDARY = { id }
-    }
-end
+--region Hooks
 
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Mods") then
+        imgui.begin_rect()
+
         if imgui.tree_node("Developer Tools") then
             _, settings.detailedLogging = imgui.checkbox("Detailed logging", settings.detailedLogging)
 
@@ -112,11 +117,16 @@ re.on_draw_ui(function()
             if imgui.button("Clear debug console") then
                 re7utils.clearDebugConsole()
             end
+
+            imgui.tree_pop()
         end
-        imgui.begin_rect()
 
         if imgui.button("Force Albert") then
             forceItem("Handgun_Albert_Reward")
+        end
+
+        if imgui.button("Force Healing") then
+            forceItem("RemedyL")
         end
 
         if imgui.button("Reset drop tables") then
@@ -138,7 +148,7 @@ re.on_draw_ui(function()
             -- Basement: (-19.955242, -5.250000, 12.617932)
             -- Hallway: (22.662031, 0, 12.848048)
 
-            -- TODO Disable collision
+
             local player = re7utils.get_localplayer()
             local controller = re7utils.get_component(player, "via.physics.CharacterController")
             if not player or not controller then return end
@@ -153,31 +163,12 @@ re.on_draw_ui(function()
 
         _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
 
-        imgui.end_rect(2)
         imgui.tree_pop()
-
-        if imgui.button("Dump") then
-            json.dump_file("EthanMustDieSettings.json", settings)
-        end
+        imgui.end_rect(5)
+        imgui.spacing()
+        imgui.spacing()
     end
 end)
-
---region DRAW CRATE POSITIONS
-
-local function getCrateLabelAndColor(name)
-    if name == "sm9133_IMD_NormalBox" then
-        return { label = "N", color = re7utils.rgbToInt(1, 0.984, 0, 1):int() }
-    elseif name == "sm9133_IMD_RareBox" then
-        return { label = "R", color = re7utils.rgbToInt(0, 1, 0, 1):int() }
-    elseif name == "sm9133_IMD_SuperRareBox" then
-        return { label = "S", color = re7utils.rgbToInt(1, 0, 0.894, 1):int() }
-    elseif name == "sm2619_IMD_LegendaryBox" then
-        return { label = "L", color = re7utils.rgbToInt(1, 0, 0, 1):int() }
-    else
-        log.debug(name)
-        return { label = "?", color = re7utils.rgbToInt(1, 1, 1, 1):int() }
-    end
-end
 
 -- Box initialization function.
 sdk.hook(
@@ -217,6 +208,31 @@ sdk.hook(
     end,
     function(retval) return retval end --post
 )
+
+-- Allows instant restarting.
+--[[ sdk.hook(
+    sdk.find_type_definition("app.OtherRestartControl"):get_method("onStart"),
+    function(args)
+        restartControl = sdk.to_managed_object(args[2])
+    end,
+    function(r) return r end
+) ]]
+
+-- Crate position drawing
+local function getCrateLabelAndColor(name)
+    if name == "sm9133_IMD_NormalBox" then
+        return { label = "N", color = re7utils.rgbToInt(1, 0.984, 0, 1):int() }
+    elseif name == "sm9133_IMD_RareBox" then
+        return { label = "R", color = re7utils.rgbToInt(0, 1, 0, 1):int() }
+    elseif name == "sm9133_IMD_SuperRareBox" then
+        return { label = "S", color = re7utils.rgbToInt(1, 0, 0.894, 1):int() }
+    elseif name == "sm2619_IMD_LegendaryBox" then
+        return { label = "L", color = re7utils.rgbToInt(1, 0, 0, 1):int() }
+    else
+        log.debug(name)
+        return { label = "?", color = re7utils.rgbToInt(1, 1, 1, 1):int() }
+    end
+end
 
 re.on_frame(function()
     if not settings.showCratePositions or not next(crates) then return end
