@@ -5,8 +5,18 @@
 -- Enemy spawning: app.EnemyGeneratorManager.requestSpawn()
 
 if not reframework:get_game_name() == "re7" then
-    log.error("[Ethan Must Die Mods] Only compatible with RE7.")
+    re.msg("[Ethan Must Die Mods] Only compatible with RE7!")
     return
+end
+
+local default_settings = {
+    showCratePositions = true
+}
+local settings = json.load_file("EthanMustDieSettings.json") or {}
+for k, v in pairs(default_settings) do
+    if settings[k] == nil then
+        settings[k] = v
+    end
 end
 
 local re7utils = require("utility/RE7Utils")
@@ -134,8 +144,6 @@ re.on_draw_ui(function()
             -- Basement: (-19.955242, -5.250000, 12.617932)
             -- Hallway: (22.662031, 0, 12.848048)
 
-
-
             -- TODO Disable collision
             local player = re7utils.get_localplayer()
             local controller = re7utils.get_component(player, "via.physics.CharacterController")
@@ -149,10 +157,14 @@ re.on_draw_ui(function()
             controller:call("warp") ]]
         end
 
-        _, showCratePositions = imgui.checkbox("Show crate positions", showCratePositions)
+        _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
 
         imgui.end_rect(2)
         imgui.tree_pop()
+
+        if imgui.button("Dump") then
+            json.dump_file("EthanMustDieSettings.json", settings)
+        end
     end
 end)
 
