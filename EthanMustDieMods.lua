@@ -4,7 +4,7 @@
 -- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
 -- Enemy spawning: app.EnemyGeneratorManager.requestSpawn()
 
-if not reframework:get_game_name() == "re7" then
+if not reframework:get_game_name() == "re7" then --or sdk.get_tdb_version() ~= 70 then
     re.msg("[Ethan Must Die Mods] Only compatible with RE7!")
     return
 end
@@ -90,15 +90,6 @@ local function manipulateCrateRNG(destroyedCrateType)
         end
     end
 end
-
--- This method gets called every time a crate is destroyed.
-sdk.hook(
-    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("getDropItemInstance"),
-    function(args)
-        manipulateCrateRNG(sdk.to_managed_object(args[4]):call("ToString"))
-    end,
-    function(retval) return retval end --post
-)
 
 local function forceItem(id)
     crateItems = {
@@ -188,6 +179,7 @@ local function getCrateLabelAndColor(name)
     end
 end
 
+-- Box initialization function.
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxSetPointIMD"):get_method("overrideIntaractParam"),
     function(args)
@@ -199,6 +191,7 @@ sdk.hook(
     function(retval) return retval end
 )
 
+-- Cleanup on restarts.
 sdk.hook(
     sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("onDestroy"),
     function(_)
@@ -206,6 +199,23 @@ sdk.hook(
         re7utils.clearDebugConsole()
     end,
     function(retval) return retval end
+)
+
+-- This method gets called every time a crate is destroyed.
+sdk.hook(
+    sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("getDropItemInstance"),
+    function(args)
+        local destroyedCrate = sdk.to_managed_object(args[3])
+        local dropTableName = sdk.to_managed_object(args[4]):call("ToString")
+        manipulateCrateRNG(dropTableName)
+
+        for i, crate in ipairs(crates) do
+            if (crate:get_Transform():get_Position() == destroyedCrate:get_Transform():get_Position()) then
+                table.remove(crates, i)
+            end
+        end
+    end,
+    function(retval) return retval end --post
 )
 
 re.on_frame(function()
