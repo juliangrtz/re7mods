@@ -25,6 +25,12 @@ end
 
 -- Various utility functions
 
+function re7utils.sleep(a)
+    local sec = tonumber(os.clock() + a);
+    while (os.clock() < sec) do
+    end
+end
+
 function re7utils.vec3tostring(vec3) return string.format("(%f, %f, %f)", vec3.x, vec3.y, vec3.z) end
 
 function re7utils.get_localplayer()

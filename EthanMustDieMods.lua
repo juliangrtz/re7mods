@@ -2,6 +2,7 @@
 -- app_DLCContentSceneManager__addChapter3_IMD_UpLayer318169( red sky???
 -- app_DropItemPoolIMD___c__DisplayClass3_0___getTargetInstance_b__0360444 start with knife?
 -- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
+-- Enemy spawning: app.EnemyGeneratorManager.requestSpawn()
 
 if not reframework:get_game_name() == "re7" then
     log.error("[Ethan Must Die Mods] Only compatible with RE7.")
@@ -131,9 +132,6 @@ re.on_draw_ui(function()
         if imgui.button("Hallway") then
             -- Big lobby: (-0.622532, -0.000000, 11.295543)
             -- Basement: (-19.955242, -5.250000, 12.617932)
-
-
-
             -- Hallway: (22.662031, 0, 12.848048)
 
 
@@ -145,6 +143,10 @@ re.on_draw_ui(function()
             controller:call("warp")
             player:get_Transform():set_Position(Vector3f.new(-0.622532, -0.000000, 11.295543))
             controller:call("warp")
+
+            --[[ controller:call("warp")
+            player:get_Transform():set_Position(Vector3f.new(-19.955242, -5.250000, 12.617932))
+            controller:call("warp") ]]
         end
 
         _, showCratePositions = imgui.checkbox("Show crate positions", showCratePositions)
@@ -176,7 +178,8 @@ sdk.hook(
     function(args)
         local box = sdk.to_managed_object(args[3])
         table.insert(crates, box)
-        log.debug("[Ethan Must Die Mods] Box at " ..vec3tostring(transform:get_Position()) .. " :: " .. box:get_Name())
+        log.debug("[Ethan Must Die Mods] Box at " ..
+            re7utils.vec3tostring(box:get_Transform():get_Position()) .. " :: " .. box:get_Name())
     end,
     function(retval) return retval end
 )
@@ -197,7 +200,6 @@ re.on_frame(function()
         local crate = crates[i]
         local crateName = crate:get_Name()
         local labelColorPair = getCrateLabelAndColor(crateName)
-        --print(crateName .. " " .. labelColorPair.label .. ":" .. string.format("%x", labelColorPair.color))
         draw.world_text(labelColorPair.label, crate:get_Transform():get_Position(), labelColorPair.color)
     end
 end)
