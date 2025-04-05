@@ -11,6 +11,7 @@ end
 
 -- region Settings
 local default_settings = {
+    manipulateRNG = true,
     showCratePositions = true,
     detailedLogging = false
 }
@@ -24,7 +25,6 @@ for k, v in pairs(default_settings) do
 end
 --endregion
 
-local restartControl
 local re7utils = require("utility/RE7Utils")
 local crates = {}
 local crateItems = {
@@ -107,6 +107,9 @@ re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Mods") then
         imgui.begin_rect()
 
+        imgui.text("This tool shall only be used for experimentation\nand not official speedruns.")
+        _, settings.manipulateRNG = imgui.checkbox("Manipulate RNG", settings.manipulateRNG)
+
         if imgui.tree_node("Developer Tools") then
             _, settings.detailedLogging = imgui.checkbox("Detailed logging", settings.detailedLogging)
 
@@ -121,47 +124,41 @@ re.on_draw_ui(function()
             imgui.tree_pop()
         end
 
-        if imgui.button("Force Albert") then
-            forceItem("Handgun_Albert_Reward")
+        if imgui.tree_node("Force specific items") then
+            if imgui.button("Albert") then forceItem("Handgun_Albert_Reward") end; imgui.same_line()
+            if imgui.button("Healing") then forceItem("RemedyL") end; imgui.same_line()
+            if imgui.button("Steroids") then forceItem("Stimulant") end;
+            if imgui.button("Key") then forceItem("GreenHouseKey") end;
+
+
+            imgui.spacing()
+            if imgui.button("Reset drop tables") then
+                crateItems = {
+                    NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
+                    RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
+                    SUPERRARE = { "Handgun_M19", "MachineGun" },
+                    LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
+                }
+
+                crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
+            end
+            imgui.tree_pop()
         end
 
-        if imgui.button("Force Healing") then
-            forceItem("RemedyL")
+        if imgui.tree_node("Teleport") then
+            imgui.text("WARNING: Unstable.")
+            if imgui.button("Main Hall") then re7utils.teleportPlayer(Vector3f.new(-0.622532, -0.000000, 11.295543)) end
+            imgui.same_line()
+            if imgui.button("Basement") then re7utils.teleportPlayer(Vector3f.new(-19.955242, -5.250000, 12.617932)) end
+            imgui.same_line()
+            if imgui.button("Hallway") then re7utils.teleportPlayer(Vector3f.new(22.662031, 0, 12.848048)) end
+            imgui.tree_pop()
         end
 
-        if imgui.button("Reset drop tables") then
-            crateItems = {
-                NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
-                RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
-                SUPERRARE = { "Handgun_M19", "MachineGun" },
-                LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
-            }
-
-            crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
+        if imgui.tree_node("Crate positions") then
+            _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
+            imgui.tree_pop()
         end
-
-        imgui.spacing()
-        imgui.text("Teleportation")
-
-        if imgui.button("Hallway") then
-            -- Big lobby: (-0.622532, -0.000000, 11.295543)
-            -- Basement: (-19.955242, -5.250000, 12.617932)
-            -- Hallway: (22.662031, 0, 12.848048)
-
-
-            local player = re7utils.get_localplayer()
-            local controller = re7utils.get_component(player, "via.physics.CharacterController")
-            if not player or not controller then return end
-            controller:call("warp")
-            player:get_Transform():set_Position(Vector3f.new(-0.622532, -0.000000, 11.295543))
-            controller:call("warp")
-
-            --[[ controller:call("warp")
-            player:get_Transform():set_Position(Vector3f.new(-19.955242, -5.250000, 12.617932))
-            controller:call("warp") ]]
-        end
-
-        _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
 
         imgui.tree_pop()
         imgui.end_rect(5)
@@ -176,8 +173,11 @@ sdk.hook(
     function(args)
         local box = sdk.to_managed_object(args[3])
         table.insert(crates, box)
-        log.debug("[Ethan Must Die Mods] Box at " ..
-            re7utils.vec3tostring(box:get_Transform():get_Position()) .. " :: " .. box:get_Name())
+
+        if settings.detailedLogging then
+            log.debug("[Ethan Must Die Mods] Box at " ..
+                re7utils.vec3tostring(box:get_Transform():get_Position()) .. " :: " .. box:get_Name())
+        end
     end,
     function(retval) return retval end
 )
