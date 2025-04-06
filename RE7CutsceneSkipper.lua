@@ -318,7 +318,7 @@ re.on_frame(function()
 			save_mgr:set_field("_IsPlayTimePause", true)
 			paused_playtime = true
 
-			imgui.text(cs_name)
+			--imgui.text(cs_name)
 
 			if tbl.active or tv then
 				local do_auto_skip = re7csettings.auto_skip and not tbl.no_auto
