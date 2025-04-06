@@ -3,17 +3,15 @@ if not enabled then return end
 
 --local re7 = require("utility/RE7")
 
---[[ sdk.hook(
-    sdk.find_type_definition("app.InteractManager"):get_method("interactStart"), --app.InteractEventAction.startInteract(System.String)
+sdk.hook(
+    sdk.find_type_definition("app.InteractManager"):get_method("isPermitInteract"), --app.InteractEventAction.startInteract(System.String)
     function(args)
-        local interactObj = sdk.to_managed_object(args[3]):get_field("_InteractType")
-        log.debug(interactObj)
+
     end,
-    function(retval) return retval end
-) ]]
+    function(retval) return true end
+)
 
 local gameEventActionController
-
 sdk.hook(
     sdk.find_type_definition("app.GameEventActionController"):get_method("doStart"), --app.InteractEventAction.startInteract(System.String)
     function(args)
@@ -47,40 +45,17 @@ sdk.hook(
     function(retval) return retval end
 )
 
-sdk.hook(
-    sdk.find_type_definition("app.InteractEventAction"):get_method("startInteract(System.String, via.Transform)"),
-    function(args)
-        local name = sdk.to_managed_object(args[3]):call("ToString")
-
-        if name == "InteractAction_PhoneStart_Short" then
-            --[[ args[3] = sdk.create_managed_string("InteractAction_PhoneEnd_Short") -- Immediately end the call
-            gameEventActionController:endContinueAction(true)
-            gameEventActionController:endEventActionTask() ]]
-        end
-    end,
-    function(retval) return retval end
-)
-
-sdk.hook(
-    sdk.find_type_definition("app.GameManager"):get_method(
-        "setFsmGlobalBoolValueId(System.Guid, System.Boolean, via.userdata.UserVariablesHub)"
-    ),
-    function(args)
-        local m_obj = sdk.to_managed_object(args[3])
-        local guidStr = string.format("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x", m_obj.mData1, m_obj.mData2,
-            m_obj.mData3, m_obj.mData4_0, m_obj.mData4_1, m_obj.mData4_2, m_obj.mData4_3, m_obj.mData4_4, m_obj.mData4_5,
-            m_obj.mData4_6, m_obj.mData4_7)
-        print(guidStr)
-    end,
-    function(retval)
-        return retval
-    end
-)
-
-
-
-
-
+--[[ via.render.Mesh
+via.physics.Colliders
+app.WwiseContainerApp
+app.ObjectLabel
+via.motion.Motion
+via.wwise.WwiseMotionSequence
+via.fsm.Fsm
+via.motion.MotionFsm
+app.InteractEventAction
+via.wwise.WwisePackageList
+via.wwise.WwiseMarkerStateList ]]
 
 local task
 sdk.hook(
@@ -88,17 +63,57 @@ sdk.hook(
     function(args)
         task = sdk.to_managed_object(args[3])
         local taskName = task:get_field("<name>k__BackingField")
-        --print(taskName)
+        local owner = task:get_field("<ownerObj>k__BackingField")
 
-        if taskName == "InteractAction_PhoneStart_Short" then
-            --args[3] = sdk.create_managed_string("InteractAction_PhoneEnd_Short")
-            task:set_field("<name>k__BackingField", "InteractAction_PhoneEnd_Short")
+        local components = owner:get_Components()
+
+        for i = 1, #components - 1 do
+            print(components[i]:ToString())
         end
+        print("-----------------------")
     end,
     function(retval)
         return retval
     end
 )
+
+sdk.hook(
+    sdk.find_type_definition("app.InteractEventAction"):get_method("findEventSetting(System.String)"),
+    function(args)
+        local name = sdk.to_managed_object(args[3]):call("ToString")
+        print(name)
+        if name == "InteractAction_PhoneStart_Short" then
+            --args[3] = sdk.create_managed_string("InteractAction_PhoneEnd_Short") -- Immediately end the call
+            --[[             gameEventActionController:endContinueAction(true)
+            gameEventActionController:endEventActionTask()  ]]
+        end
+    end,
+    function(retval) return retval end
+)
+
+
+local door
+sdk.hook(
+    sdk.find_type_definition("app.fsm.SetDoorState"):get_method("coreAction"),
+    function(args)
+        door = sdk.to_managed_object(args[2])
+    end,
+    function(retval)
+        print(door:get_field("TargetDoorObject"):get_Name())
+        print(door:get_field("State"))
+        return retval
+    end
+)
+
+--[[ sm0360_DoorBoneOldwingH240W100L01B_Dynamic
+2
+sm0343_DoorBoneOldwingH240W100L01A_Dynamic
+2
+sm9070_DoorOldwingBugH240W100_WithBugEvent
+2 ]]
+
+
+
 
 
 re.on_draw_ui(function()
