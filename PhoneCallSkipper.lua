@@ -77,21 +77,6 @@ sdk.hook(
     end
 )
 
-sdk.hook(
-    sdk.find_type_definition("app.InteractEventAction"):get_method("findEventSetting(System.String)"),
-    function(args)
-        local name = sdk.to_managed_object(args[3]):call("ToString")
-        print(name)
-        if name == "InteractAction_PhoneStart_Short" then
-            --args[3] = sdk.create_managed_string("InteractAction_PhoneEnd_Short") -- Immediately end the call
-            --[[             gameEventActionController:endContinueAction(true)
-            gameEventActionController:endEventActionTask()  ]]
-        end
-    end,
-    function(retval) return retval end
-)
-
-
 local door
 sdk.hook(
     sdk.find_type_definition("app.fsm.SetDoorState"):get_method("coreAction"),
@@ -112,7 +97,15 @@ sm0343_DoorBoneOldwingH240W100L01A_Dynamic
 sm9070_DoorOldwingBugH240W100_WithBugEvent
 2 ]]
 
-
+sdk.hook(
+    sdk.find_type_definition("app.MessageSystem"):get_method("playSoundRow"),
+    function(args)
+        sdk.to_managed_object(args[2]):requestEndAllMessage()
+    end,
+    function(retval)
+        return retval
+    end
+)
 
 
 
