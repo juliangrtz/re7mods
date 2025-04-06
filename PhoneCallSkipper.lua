@@ -11,7 +11,7 @@ end
 local in_phone_call = false
 local enabled = true
 
--- Hook the start of phone interactions
+-- Hook the start of phone interactions.
 sdk.hook(
     sdk.find_type_definition("app.InteractEventAction"):get_method("startInteract(System.String, via.Transform)"),
     function(args)
@@ -23,7 +23,7 @@ sdk.hook(
     end
 )
 
--- Hook the message system to skip phone dialogues
+-- Hook the message system to skip phone dialogues.
 sdk.hook(
     sdk.find_type_definition("app.MessageSystem"):get_method("playSoundRow"),
     function(args)
@@ -36,7 +36,7 @@ sdk.hook(
     end
 )
 
--- Draw UI in the REFramework menu
+-- Draw UI in the REFramework menu.
 re.on_draw_ui(function()
     if imgui.tree_node("Phone Call Skipper") then
         imgui.begin_rect()
