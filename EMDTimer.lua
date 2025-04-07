@@ -50,6 +50,12 @@ sdk.hook(
 )
 
 sdk.hook(
+    sdk.find_type_definition("app.PlayerDamageController"):get_method("doDie"),
+    function(_) stopped = true end,
+    function(r) return r end
+)
+
+sdk.hook(
     sdk.find_type_definition("app.InGameTimerForIMD"):get_method("onDestroy"),
     function(_) igt = nil end,
     function(r) return r end
