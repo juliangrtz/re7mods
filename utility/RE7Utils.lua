@@ -77,8 +77,8 @@ re7utils.ItemFriendlyNames = {
     -- Weapons - Firearms
     ["Burner"] = "Flamethrower",
     ["GrenadeLauncher"] = "Grenade Launcher",
-    ["Handgun_Albert"] = "Albert-01",          -- Not the replica! The one during Evie's boss fight
-    ["Handgun_Albert_Reward"] = "Albert-01 R", -- Replica
+    ["Handgun_Albert"] = "Albert-01",
+    ["Handgun_Albert_Reward"] = "Albert-01 R",
     ["Handgun_G17"] = "G17 Handgun",
     ["Handgun_M19"] = "M19 Handgun",
     ["Handgun_MPM"] = "MPM Handgun",
@@ -86,9 +86,9 @@ re7utils.ItemFriendlyNames = {
     ["Magnum"] = "44 MAG",
     ["Shotgun_DB"] = "M21 Shotgun",
     ["Shotgun_M37"] = "M37 Shotgun",
-    ["BlueBlaster"] = "BlueBlaster",   -- Jack's 55th birthday
-    ["HyperBlaster"] = "HyperBlaster", -- Jack's 55th birthday
-    ["RedBlaster"] = "RedBlaster",     -- Jack's 55th birthday
+    ["BlueBlaster"] = "BlueBlaster",
+    ["HyperBlaster"] = "HyperBlaster",
+    ["RedBlaster"] = "RedBlaster",
 
     -- Weapons - Thrown
     ["LiquidBomb"] = "Remote Bomb",

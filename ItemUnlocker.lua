@@ -1,9 +1,8 @@
 -- Adds various items to the item box that are normally not available.
 -- v1.2
--- Apr 03, 2025
--- by d3sc0le (Discord: jvl.1an)
+-- by d3sc0le
 
-if not reframework:get_game_name() == "re7" then --or sdk.get_tdb_version() ~= 70 then
+if reframework:get_game_name() ~= "re7" then --or sdk.get_tdb_version() ~= 70 then
 	re.msg("[Item Unlocker] Only compatible with RE7!")
 	return
 end
@@ -113,7 +112,8 @@ sdk.hook(
 )
 
 re.on_draw_ui(function()
-	if imgui.tree_node("Axe from guest house mod") then
+	if imgui.tree_node("Item Unlocker") then
+		imgui.text("Just select the items you want.\nThey will be added to the item box.\n")
 		imgui.spacing()
 		imgui.begin_rect()
 		_, addAxe = imgui.checkbox("Add axe to item box", addAxe)
