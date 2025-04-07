@@ -1,9 +1,26 @@
 re7 mod ideas
 
-- dual AMG and other DLC weapons in main game
-- ethan must die RNG manip WIP
+- get access to all main game weapons and items in item box ✔️
+- ethan must die timer ✔️
+- ethan must die RNG manipulation ✔️
+- skip phone calls ✔️
+- get access to all DLC weapons and items in item box https://residentevilmodding.boards.net/thread/15880/main-game-weapons-starting-chest
+- randomizer
 - ethan must die other bosses (jack3, eveline boss, mutated mia)
+- ethan must die QoL features https://residentevilmodding.boards.net/thread/15861/ethan-die-mods
 - madhouse+ mode
 - skip whole ship section
 - multiplayer mode (holdout like in pd2?)
-- 21 RNG manip
+- 21 RNG manipulation
+- ability to discard non-discardable items again https://residentevilmodding.boards.net/thread/18107/ability-discard-items-again
+- silent ethan https://residentevilmodding.boards.net/thread/16300/silent-ethan
+- no interaction prompts https://residentevilmodding.boards.net/thread/15357/interaction-prompts
+- increase the ammo capacity of 
+    - the unlockable Albert Wesker Model 01 Handgun from default 3 to 9 https://residentevilmodding.boards.net/thread/15066/mod-requests-re7-vii-biohazard
+    - g17 https://residentevilmodding.boards.net/thread/14161/glock-17-capacity-10
+    - handgun https://residentevilmodding.boards.net/thread/14110/handgun-ammo-cap-60-30
+- no weapon bobbing on walking https://residentevilmodding.boards.net/thread/15066/mod-requests-re7-vii-biohazard
+- remove all insects https://residentevilmodding.boards.net/thread/14537/removal-all-insects-re-7
+- knife with more dmg https://residentevilmodding.boards.net/thread/14169/knife-more-damage
+- no screen blood https://residentevilmodding.boards.net/thread/11859/disable-screen-blood
+- aim bot, ESP, trigger bot etc.

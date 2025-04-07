@@ -1,7 +1,7 @@
 -- Phone Call Skipper for Resident Evil 7
 -- Skips phone calls in the main game (you still need to pick up the phone)
--- by d3sc0le
--- v1.0
+-- by d3sc0le (Discord: jvl.1an)
+-- v1.1
 
 if reframework:get_game_name() ~= "re7" then
     re.msg("[Phone Call Skipper] Only compatible with Resident Evil 7!")

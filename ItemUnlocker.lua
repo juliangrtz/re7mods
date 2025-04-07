@@ -1,9 +1,12 @@
--- Adds the axe from the guest house to the item box.
+-- Adds various items to the item box that are normally not available.
 -- v1.2
 -- Apr 03, 2025
 -- by d3sc0le (Discord: jvl.1an)
 
-if not reframework:get_game_name() == "re7" then return end
+if not reframework:get_game_name() == "re7" then --or sdk.get_tdb_version() ~= 70 then
+	re.msg("[Item Unlocker] Only compatible with RE7!")
+	return
+end
 
 local function get_localplayer()
 	local object_man = sdk.get_managed_singleton("app.ObjectManager")
@@ -28,9 +31,9 @@ local function get_component(game_object, type_name)
 end
 
 -- region Jack 2 softlock fix
--- Without this wacky fix, it is not possible to expose Jack's weak spot with the axe
--- during the fight in the basement. If you figure out a better solution that is closer to
--- Jack's original behavior feel free to contact me!
+-- Without this – admittedly wacky – fix, it is not possible to expose Jack's weak spot with the axe
+-- during the fight in the basement when getting the red dog head.
+-- If you figure out a better solution that is closer to Jack's original behavior feel free to contact me!
 
 local em8010Core = nil -- Em8010 is Jack's mutated head (weak spot)
 sdk.hook(sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("doStart"),
@@ -89,7 +92,6 @@ sdk.hook(
 -- endregion
 
 local addAxe = true
-
 sdk.hook(
 	sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"),
 	function(_)
