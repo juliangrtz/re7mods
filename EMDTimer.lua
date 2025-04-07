@@ -93,29 +93,27 @@ local function getCoordinates()
     return 0, 0
 end
 
-re.on_frame(
-    function()
-        if not igt then return end
-        local x, y = getCoordinates()
+re.on_frame(function()
+    if not igt then return end
 
-        if stopped then
-            draw.text(formatTime(hrs, mins, secs, ms), x, y, settings.color)
-        else
-            hrs = igt and igt:call("getCurrentHours") or 0
-            mins = igt and igt:call("getCurrentMinutes") or 0
-            secs = igt and igt:call("getCurrentSeconds") or 0
-            ms = igt and igt:call("getCurrentMilliseconds") or 0
-            draw.text(formatTime(hrs, mins, secs, ms), x, y, settings.color)
-        end
+    if not stopped then
+        hrs = igt:call("getCurrentHours") or 0
+        mins = igt:call("getCurrentMinutes") or 0
+        secs = igt:call("getCurrentSeconds") or 0
+        ms = igt:call("getCurrentMilliseconds") or 0
     end
-)
+
+    local x, y = getCoordinates()
+    draw.text(formatTime(hrs, mins, secs, ms), x, y, settings.color)
+end)
 
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Timer") then
+        local changedEnabled, changedTimerPos, changedColor
         changedEnabled, settings.enabled = imgui.checkbox("Enabled", settings.enabled)
         changedTimerPos, settings.timerPosIndex = imgui.combo("Position", settings.timerPosIndex, timerPositions)
         changedColor, settings.color = imgui.color_picker("Color", settings.color, 0)
-        
+
         local changed = changedEnabled or changedTimerPos or changedColor
         if changed then json.dump_file(settingsJson, settings) end
         imgui.tree_pop()
