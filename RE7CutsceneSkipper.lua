@@ -226,6 +226,7 @@ re.on_draw_ui(function()
 		imgui.spacing()
 		imgui.begin_rect()
 		changed, re7csettings.mod_enabled = imgui.checkbox("Enabled", re7csettings.mod_enabled); cs()
+		imgui.same_line()
 		changed, re7csettings.auto_skip = imgui.checkbox("Auto Skip", re7csettings.auto_skip); cs()
 		if imgui.is_item_hovered() then
 			imgui.set_tooltip(re7csettings.auto_skip and "Skip all cutscenes automatically" or

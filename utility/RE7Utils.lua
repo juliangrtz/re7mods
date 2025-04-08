@@ -161,7 +161,7 @@ re7utils.ItemFriendlyNames = {
     ["TalismanKey"] = "Crow Key",
     ["WorkroomKey"] = "Dissection Room Key",
 
-    -- Maps - Treasure Maps
+    -- Maps
     ["TreasureMap01"] = "Treasure Photo - Morgue",
     ["TreasureMap02"] = "Treasure Photo - Old House",
     ["TreasureMap03"] = "Treasure Photo - Master Bedroom",

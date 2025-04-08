@@ -4,11 +4,6 @@
 -- app_ItemBoxLotteryManagerIMD__getDropItemInstance184498
 -- Enemy spawning: app.EnemyGeneratorManager.requestSpawn()
 
---[[
-    (-4.831269, 0.835502, 44.972279) near spawn
-    (-3.277556, -1.154342, 21.520510) stairs
-]]
-
 if not reframework:get_game_name() == "re7" then --or sdk.get_tdb_version() ~= 70 then
     re.msg("[Ethan Must Die Mods] Only compatible with RE7!")
     return
@@ -39,6 +34,25 @@ local crateItems = {
     LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
 }
 local crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
+
+local function areVectorsClose(vec1, vec2, epsilon)
+    return math.abs(vec1.x - vec2.x) < epsilon and
+        math.abs(vec1.y - vec2.y) < epsilon and
+        math.abs(vec1.z - vec2.z) < epsilon
+end
+
+local function hasCrateAtPos(pos, type)
+    for i = 1, #crates do
+        local crate = crates[i]
+        if areVectorsClose(crate:get_Transform():get_Position(), pos, 0.01) then
+            if string.find(crate:get_Name(), type) then
+                return true
+            end
+        end
+    end
+
+    return false
+end
 
 local function forceItem(id)
     crateItems = {
@@ -107,6 +121,25 @@ local function manipulateCrateRNG(destroyedCrateType)
 end
 
 --region Hooks
+local restartControl
+sdk.hook(
+    sdk.find_type_definition("app.OtherRestartControl"):get_method("doUpdate"),
+    function(args)
+        if restartControl then return end
+        restartControl = sdk.to_managed_object(args[2])
+    end,
+    function(r) return r end
+)
+
+local playerDamageController
+sdk.hook(
+    sdk.find_type_definition("app.PlayerDamageController"):get_method("doUpdate"),
+    function(args)
+        if playerDamageController then return end
+        playerDamageController = sdk.to_managed_object(args[2])
+    end,
+    function(r) return r end
+)
 
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Mods") then
@@ -183,6 +216,27 @@ re.on_draw_ui(function()
             imgui.text("R = Rare (2 stars)")
             imgui.text("S = Super rare (3 stars)")
             imgui.text("L = Legendary (4 stars)")
+
+            imgui.spacing()
+
+            imgui.text("Normal crate near spawn (1): " ..
+                tostring(hasCrateAtPos(Vector3f.new(-4.831269, 0.835502, 44.972279), "Normal")))
+            imgui.text("Normal crate near spawn (2): " ..
+                tostring(hasCrateAtPos(Vector3f.new(-3.277556, -1.154342, 21.520510), "Normal")))
+
+            imgui.tree_pop()
+        end
+
+        if imgui.tree_node("Actions") then
+            if imgui.button("Restart run") then
+                if restartControl then restartControl:requestRestart() end
+            end
+
+            if imgui.button("Kill player") then
+                if playerDamageController then playerDamageController:set_isDying(true) end
+            end
+
+            if imgui.button("Spawn statue with Albert") then re.msg("Not implemented yet") end
             imgui.tree_pop()
         end
 
@@ -192,6 +246,24 @@ re.on_draw_ui(function()
         imgui.spacing()
     end
 end)
+
+
+
+
+
+
+sdk.hook(
+    sdk.find_type_definition("app.EthanGraveMarkerManager"):get_method("trySetGraveMarker"),
+    function(args)
+        local gameObj = sdk.to_managed_object(args[3])
+        --print(gameObj:get_Name())
+        --return sdk.PreHookResult.SKIP_ORIGINAL
+    end,
+    function(retval) return retval end
+)
+
+
+
 
 -- Box initialization function.
 sdk.hook(
@@ -234,15 +306,6 @@ sdk.hook(
     end,
     function(retval) return retval end --post
 )
-
--- Allows instant restarting.
---[[ sdk.hook(
-    sdk.find_type_definition("app.OtherRestartControl"):get_method("onStart"),
-    function(args)
-        restartControl = sdk.to_managed_object(args[2])
-    end,
-    function(r) return r end
-) ]]
 
 -- Crate position drawing
 local function getCrateLabelAndColor(name)

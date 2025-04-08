@@ -1,4 +1,4 @@
-package.preload[ "Health_Bars.bar_customization" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.bar_customization"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local config;\
@@ -194,9 +194,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Health_Bars\\bar_customization.lua" ) )
+", '@' .. ".\\Health_Bars\\bar_customization.lua"))
 
-package.preload[ "Health_Bars.config" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.config"] = assert((loadstring or load)("local this = {};\
 local version = \"1.2\";\
 \
 local utils;\
@@ -422,9 +422,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Health_Bars\\config.lua" ) )
+", '@' .. ".\\Health_Bars\\config.lua"))
 
-package.preload[ "Health_Bars.customization_menu" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.customization_menu"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local config;\
@@ -967,9 +967,9 @@ function this.init_module()\
 \9this.reload_font();\
 end\
 \
-return this;", '@'..".\\Health_Bars\\customization_menu.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\customization_menu.lua"))
 
-package.preload[ "Health_Bars.drawing" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.drawing"] = assert((loadstring or load)("local this = {};\
 \
 local config;\
 local utils;\
@@ -1291,9 +1291,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Health_Bars\\drawing.lua" ) )
+", '@' .. ".\\Health_Bars\\drawing.lua"))
 
-package.preload[ "Health_Bars.enemy_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.enemy_handler"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local singletons;\
@@ -1849,9 +1849,9 @@ function this.init_module()\
 \9end);\
 end\
 \
-return this;", '@'..".\\Health_Bars\\enemy_handler.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\enemy_handler.lua"))
 
-package.preload[ "Health_Bars.error_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.error_handler"] = assert((loadstring or load)("local this = {};\
 \
 local time;\
 local utils;\
@@ -1938,9 +1938,9 @@ function this.init_module()\
 \9config = require(\"Health_Bars.config\");\
 end\
 \
-return this;", '@'..".\\Health_Bars\\error_handler.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\error_handler.lua"))
 
-package.preload[ "Health_Bars.game_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.game_handler"] = assert((loadstring or load)("local this = {};\
 \
 local singletons;\
 local error_handler;\
@@ -2114,9 +2114,9 @@ function this.init_module()\
 \9end);\
 end\
 \
-return this;", '@'..".\\Health_Bars\\game_handler.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\game_handler.lua"))
 
-package.preload[ "Health_Bars.label_customization" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.label_customization"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local config;\
@@ -2253,9 +2253,9 @@ function this.init_module()\
 \9customization_menu = require(\"Health_Bars.customization_menu\");\
 end\
 \
-return this;", '@'..".\\Health_Bars\\label_customization.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\label_customization.lua"))
 
-package.preload[ "Health_Bars.language" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.language"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 \
@@ -2470,9 +2470,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Health_Bars\\language.lua" ) )
+", '@' .. ".\\Health_Bars\\language.lua"))
 
-package.preload[ "Health_Bars.player_handler" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.player_handler"] = assert((loadstring or load)("local this = {};\
 \
 local utils;\
 local singletons;\
@@ -2698,9 +2698,9 @@ function this.init_module()\
 \9config = require(\"Health_Bars.config\");\
 end\
 \
-return this;", '@'..".\\Health_Bars\\player_handler.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\player_handler.lua"))
 
-package.preload[ "Health_Bars.screen" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.screen"] = assert((loadstring or load)("local this = {};\
 \
 local config;\
 local singletons;\
@@ -2812,9 +2812,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Health_Bars\\screen.lua" ) )
+", '@' .. ".\\Health_Bars\\screen.lua"))
 
-package.preload[ "Health_Bars.singletons" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.singletons"] = assert((loadstring or load)("local this = {};\
 \
 local customization_menu;\
 local error_handler;\
@@ -2912,9 +2912,9 @@ function this.init_module()\
 end\
 \
 return this;\
-", '@'..".\\Health_Bars\\singletons.lua" ) )
+", '@' .. ".\\Health_Bars\\singletons.lua"))
 
-package.preload[ "Health_Bars.time" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.time"] = assert((loadstring or load)("local this = {};\
 \
 local singletons;\
 local customization_menu;\
@@ -3055,9 +3055,9 @@ function this.init_module()\
 \9player_handler = require(\"Health_Bars.player_handler\");\
 end\
 \
-return this;", '@'..".\\Health_Bars\\time.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\time.lua"))
 
-package.preload[ "Health_Bars.utils" ] = assert( (loadstring or load)( "local this = {};\
+package.preload["Health_Bars.utils"] = assert((loadstring or load)("local this = {};\
 \
 local sdk = sdk;\
 local tostring = tostring;\
@@ -3545,9 +3545,9 @@ unicode_map = this.unicode.map;\
 unicode_relative_position = this.unicode.relative_position;\
 unicode_chars = this.unicode.chars;\
 \
-return this;", '@'..".\\Health_Bars\\utils.lua" ) )
+return this;", '@' .. ".\\Health_Bars\\utils.lua"))
 
-assert( (loadstring or load)( "\
+assert((loadstring or load)("\
 local sdk = sdk;\
 local tostring = tostring;\
 local pairs = pairs;\
@@ -3648,7 +3648,7 @@ end\
 re.on_draw_ui(function()\
 \9local changed = false;\
 \9local cached_config = config.current_config;\
-\
+if imgui.tree_node(\"Health Bars\") then\
 \9if imgui.button(\"Health Bars v\" .. config.current_config.version) then\
 \9\9customization_menu.is_opened = not customization_menu.is_opened;\
 \9end\
@@ -3659,6 +3659,8 @@ re.on_draw_ui(function()\
 \9if changed then\
 \9\9config.save();\
 \9end\
+imgui.tree_pop()\
+end\
 end);\
 \
 re.on_frame(function()\
@@ -3693,5 +3695,4 @@ end);\
 -- #endregion\
 ----------------------------D2D------------------------------\
 \
-time.init_global_timers();", '@'.."Health_Bars.lua" ) )( ... )
-
+time.init_global_timers();", '@' .. "Health_Bars.lua"))(...)
