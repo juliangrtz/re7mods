@@ -1,5 +1,5 @@
 -- Adds various items to the item box that are normally not available.
--- v1.2
+-- v1.0
 -- by d3sc0le
 
 if reframework:get_game_name() ~= "re7" then --or sdk.get_tdb_version() ~= 70 then
@@ -171,6 +171,7 @@ local item_friendly_names = {
 local default_settings = {
 	enabled = true,
 	requiredAxeHitsJack2 = 10,
+	itemQuantity = 100,
 	items = {
 		["Bar"] = false,
 		["ChainSaw"] = false,
@@ -394,8 +395,9 @@ sdk.hook(
 			if enabled then
 				local hasItem = inventory:call("hasItemIncludeItemBox(System.String, System.Boolean)", itemId, true)
 				if not hasItem then
-					itemBoxData:call("addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)", itemId, 1,
-						nil)
+					local quantity = tonumber(settings.itemQuantity)
+					local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
+					itemBoxData:call(signature, itemId, quantity, nil)
 				end
 			end
 		end
@@ -417,11 +419,15 @@ re.on_draw_ui(function()
 		imgui.text(
 			"Just select the items you want.\nThey will be added to the item box.\nSome may not work as expected.")
 		imgui.spacing()
-		_, settings.enabled = imgui.checkbox("Enabled", settings.enabled)
+		toggledOnOff, settings.enabled = imgui.checkbox("Enabled", settings.enabled)
 		if not settings.enabled then
 			imgui.tree_pop()
 			return
 		end
+
+		if toggledOnOff then json.dump_file(settingsFile, settings) end
+
+		_, settings.itemQuantity, _, _ = imgui.input_text("Quantity", settings.itemQuantity, 1 << 0) -- Allow 0123456789.+-*/
 
 		if imgui.button("Select All") then
 			for item_id, _ in pairs(settings.items) do

@@ -131,12 +131,12 @@ sdk.hook(
     function(r) return r end
 )
 
-local playerDamageController
+local damageController
 sdk.hook(
-    sdk.find_type_definition("app.PlayerDamageController"):get_method("doUpdate"),
+    sdk.find_type_definition("app.DamageController"):get_method("doUpdate"),
     function(args)
-        if playerDamageController then return end
-        playerDamageController = sdk.to_managed_object(args[2])
+        if damageController then return end
+        damageController = sdk.to_managed_object(args[2])
     end,
     function(r) return r end
 )
@@ -233,10 +233,13 @@ re.on_draw_ui(function()
             end
 
             if imgui.button("Kill player") then
-                if playerDamageController then playerDamageController:set_isDying(true) end
+
             end
 
-            if imgui.button("Spawn statue with Albert") then re.msg("Not implemented yet") end
+            if imgui.button("Spawn statue with Albert") then
+                local playerPos = re7utils.get_localplayer():get_Transform():get_Position()
+                sdk.get_managed_singleton("app.EthanGraveMarkerManager").GraveMarker:instantiate(playerPos)
+            end
             imgui.tree_pop()
         end
 
@@ -247,23 +250,14 @@ re.on_draw_ui(function()
     end
 end)
 
-
-
-
-
-
+-- Called when destroying an angel statue.
 sdk.hook(
-    sdk.find_type_definition("app.EthanGraveMarkerManager"):get_method("trySetGraveMarker"),
+    sdk.find_type_definition("app.EthanGraveMarker"):get_method("createDropItem"),
     function(args)
-        local gameObj = sdk.to_managed_object(args[3])
-        --print(gameObj:get_Name())
-        --return sdk.PreHookResult.SKIP_ORIGINAL
+        sdk.to_managed_object(args[2]).createItemId = "Handgun_Albert_Reward" -- Force Albert
     end,
     function(retval) return retval end
 )
-
-
-
 
 -- Box initialization function.
 sdk.hook(
@@ -307,7 +301,6 @@ sdk.hook(
     function(retval) return retval end --post
 )
 
--- Crate position drawing
 local function getCrateLabelAndColor(name)
     if name == "sm9133_IMD_NormalBox" then
         return { label = "N", color = re7utils.rgbToInt(1, 0.984, 0, 1):int() }
@@ -323,6 +316,7 @@ local function getCrateLabelAndColor(name)
     end
 end
 
+-- Actual drawing to the screen.
 re.on_frame(function()
     if not settings.showCratePositions or not next(crates) then return end
 
