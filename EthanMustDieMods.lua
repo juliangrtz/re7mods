@@ -71,7 +71,9 @@ local function manipulateCrateRNG(destroyedCrateType)
         return
     end
 
-    log.debug("[Ethan Must Die Mods] Destroyed a " .. destroyedCrateType:lower() .. " crate.")
+    if settings.detailedLogging then
+        log.debug("[Ethan Must Die Mods] Destroyed a " .. destroyedCrateType:lower() .. " crate.")
+    end
 
     local itemDropTableContainer = itemBoxLotteryManager:get_field("ItemDropTableContainer")
     local dropTableList = itemDropTableContainer:get_field("DropTableList")
@@ -80,7 +82,7 @@ local function manipulateCrateRNG(destroyedCrateType)
     local index = crateIndices[destroyedCrateType] % #crateItems[destroyedCrateType] + 1
     local newItem = crateItems[destroyedCrateType][index]
     crateIndices[destroyedCrateType] = crateIndices[destroyedCrateType] + 1
-    log.debug("[Ethan Must Die Mods] Forcing item " .. newItem)
+    if settings.detailedLogging then log.debug("[Ethan Must Die Mods] Forcing item " .. newItem) end
 
     for i = 0, 3 do
         local param = dropItemParams[i]
@@ -232,9 +234,7 @@ re.on_draw_ui(function()
                 if restartControl then restartControl:requestRestart() end
             end
 
-            if imgui.button("Kill player") then
-
-            end
+            if imgui.button("Disable enemy AI") then end
 
             if imgui.button("Spawn statue with Albert") then
                 local playerPos = re7utils.get_localplayer():get_Transform():get_Position()

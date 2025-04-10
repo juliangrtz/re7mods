@@ -288,8 +288,10 @@ re.on_frame(function()
 	tics = tics + 1
 
 	if tics > 1 and re7csettings.mod_enabled then
-		save_mgr = scene:call("findGameObject(System.String)", "SystemObject"):call("getComponent(System.Type)",
-			sdk.typeof("app.SaveDataManager"))
+		if not scene then return end
+		systemObject = scene:call("findGameObject(System.String)", "SystemObject")
+		if not systemObject then return end
+		save_mgr = systemObject:call("getComponent(System.Type)", sdk.typeof("app.SaveDataManager"))
 
 		local current_speed = scene:call("get_TimeScale()") or 1.0
 		is_skipping = (current_speed > 50.0)

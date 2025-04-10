@@ -18,6 +18,7 @@ local timerPositions = {
     "Bottom center",
     "Bottom right"
 }
+local enemySpawns = 0
 
 -- region Settings
 local settingsJson = "EthanMustDieTimer.json"
@@ -34,6 +35,18 @@ for k, v in pairs(default_settings) do
 end
 --endregion
 
+local function formatTimeDetailed(hours, minutes, seconds, milliseconds)
+    if hours > 0 then
+        return string.format("%02d:%02d:%02d:%03d", hours, minutes, seconds, milliseconds)
+    else
+        return string.format("%02d:%02d:%03d", minutes, seconds, milliseconds)
+    end
+end
+
+local function formatTimeConsole(minutes, seconds)
+    return string.format("%01d:%02d", minutes, seconds)
+end
+
 sdk.hook(
     sdk.find_type_definition("app.InGameTimerForIMD"):get_method("tStart"),
     function(args)
@@ -45,29 +58,70 @@ sdk.hook(
 
 sdk.hook(
     sdk.find_type_definition("app.Chapter3_IMD_Result"):get_method("onOpen"),
-    function(_) stopped = true end,
+    function(_)
+        stopped = true
+        printSplit("End", "4:56")
+    end,
     function(r) return r end
 )
 
 sdk.hook(
     sdk.find_type_definition("app.PlayerDamageController"):get_method("doDie"),
-    function(_) stopped = true end,
+    function(_)
+        stopped = true
+        enemySpawns = 0
+    end,
     function(r) return r end
 )
 
 sdk.hook(
     sdk.find_type_definition("app.InGameTimerForIMD"):get_method("onDestroy"),
-    function(_) igt = nil end,
+    function(_)
+        igt = nil
+        enemySpawns = 0
+    end,
     function(r) return r end
 )
 
-local function formatTime(hours, minutes, seconds, milliseconds)
-    if hours > 0 then
-        return string.format("%02d:%02d:%02d:%03d", hours, minutes, seconds, milliseconds)
-    else
-        return string.format("%02d:%02d:%03d", minutes, seconds, milliseconds)
-    end
+local function printSplit(name, wrTime)
+    print(name .. ": " .. formatTimeConsole(mins, secs) .. " / " .. wrTime)
 end
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyGeneratorManager"):get_method("requestSpawn"),
+    function(_)
+        enemySpawns = enemySpawns + 1
+        if enemySpawns == 3 then
+            printSplit("Main Hall", "0:14")
+        elseif enemySpawns == 5 then
+            printSplit("Hallway", "0:24")
+        elseif enemySpawns == 7 then
+            printSplit("Fat Molded", "0:45")
+        elseif enemySpawns == 8 then
+            printSplit("Wire Traps", "1:10")
+        elseif enemySpawns == 10 then
+            printSplit("Gauntlet 1", "1:22")
+        elseif enemySpawns == 13 then
+            printSplit("Porch", "2:17")
+        elseif enemySpawns == 20 then
+            printSplit("Gauntlet 2", "2:57")
+        elseif enemySpawns == 24 then
+            printSplit("Quick Moldeds", "3:18")
+        elseif enemySpawns == 27 then
+            printSplit("Green House Gate", "3:39")
+        end
+    end,
+    function(r) return r end
+)
+
+-- app.Em3600ActionController.requestDeadAction
+sdk.hook(
+    sdk.find_type_definition("app.Em3600ActionController"):get_method("requestWindowBrakeEffect"),
+    function(_)
+        printSplit("Marge fight", "4:05")
+    end,
+    function(r) return r end
+)
 
 local function getCoordinates()
     local pos = timerPositions[settings.timerPosIndex]
@@ -79,8 +133,8 @@ local function getCoordinates()
     local size = view:call("get_Size")
     local w, h = size.w, size.h
     local padding = 20
-    local textWidth = 50  -- estimate
-    local textHeight = 25 -- estimate
+    local textWidth = 50
+    local textHeight = 25
 
     if pos == "Top left" then
         return padding, padding
@@ -110,7 +164,7 @@ re.on_frame(function()
     end
 
     local x, y = getCoordinates()
-    draw.text(formatTime(hrs, mins, secs, ms), x, y, settings.color)
+    draw.text(formatTimeDetailed(hrs, mins, secs, ms), x, y, settings.color)
 end)
 
 re.on_draw_ui(function()
