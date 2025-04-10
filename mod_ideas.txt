@@ -4,6 +4,7 @@ re7 mod ideas
 - ethan must die timer ✔️
 - ethan must die RNG manipulation ✔️
 - skip phone calls ✔️
+- no screen blood https://residentevilmodding.boards.net/thread/11859/disable-screen-blood ✔️
 - get access to all DLC weapons and items in item box https://residentevilmodding.boards.net/thread/15880/main-game-weapons-starting-chest
 - randomizer
 - ethan must die other bosses (jack3, eveline boss, mutated mia)
@@ -22,5 +23,4 @@ re7 mod ideas
 - no weapon bobbing on walking https://residentevilmodding.boards.net/thread/15066/mod-requests-re7-vii-biohazard
 - remove all insects https://residentevilmodding.boards.net/thread/14537/removal-all-insects-re-7
 - knife with more dmg https://residentevilmodding.boards.net/thread/14169/knife-more-damage
-- no screen blood https://residentevilmodding.boards.net/thread/11859/disable-screen-blood
 - aim bot, ESP, trigger bot etc.

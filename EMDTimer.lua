@@ -90,6 +90,7 @@ end
 sdk.hook(
     sdk.find_type_definition("app.EnemyGeneratorManager"):get_method("requestSpawn"),
     function(_)
+        if not igt then return end
         enemySpawns = enemySpawns + 1
         if enemySpawns == 3 then
             printSplit("Main Hall", "0:14")
