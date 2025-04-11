@@ -13,7 +13,14 @@ sdk.hook(
 re.on_draw_ui(function()
     if imgui.tree_node("Developer Tools") then
         _, freezeAmmo = imgui.checkbox("Freeze ammo", freezeAmmo)
-        
+
+--[[         if imgui.button("Copy player position to clipboard") then
+            local player = re7utils.get_localplayer()
+            if not player then return end
+            sdk.copy_to_clipboard(re7utils.vec3tostring(player:get_Transform():get_Position()))
+            log.debug("Copied position to clipboard")
+        end ]]
+
         if imgui.button("Log player position") then
             local player = re7utils.get_localplayer()
             if not player then return end

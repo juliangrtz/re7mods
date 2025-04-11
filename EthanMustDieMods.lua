@@ -153,14 +153,6 @@ re.on_draw_ui(function()
         if imgui.tree_node("Developer Tools") then
             _, settings.detailedLogging = imgui.checkbox("Detailed logging", settings.detailedLogging)
 
-            if imgui.button("Log player position") then
-                log.debug(re7utils.vec3tostring(re7utils.get_localplayer():get_Transform():get_Position()))
-            end
-
-            if imgui.button("Clear debug console") then
-                re7utils.clearDebugConsole()
-            end
-
             if imgui.button("Albert > Infinite Ammo > Heal") then
                 crateItems = {
                     NORMAL = { "Handgun_Albert_Reward", "UnlimitedAmmo", "RemedyL", },
@@ -184,17 +176,18 @@ re.on_draw_ui(function()
             if imgui.button("M37") then forceItem("Shotgun_M37") end; imgui.same_line()
             if imgui.button("Heal") then forceItem("RemedyL") end; imgui.same_line()
             if imgui.button("Roids") then forceItem("Stimulant") end;
+            if imgui.button("Grenade Launcher") then forceItem("GrenadeLauncher") end; imgui.same_line()
             if imgui.button("Key") then forceItem("GreenHouseKey") end; imgui.same_line()
-            if imgui.button("Unlimited Ammo") then forceItem("UnlimitedAmmo") end;
+            if imgui.button("Inf. Ammo") then forceItem("UnlimitedAmmo") end;
 
             for _ = 0, 3 do imgui.spacing() end
 
             if imgui.button("Reset drop tables") then
                 crateItems = {
-                    NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
+                    NORMAL = { "ChemicalM", "Gunpowder" },
                     RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
                     SUPERRARE = { "Handgun_M19", "MachineGun" },
-                    LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
+                    LEGENDARY = { "GrenadeLauncher", "Magnum", "HandgunBulletL" }
                 }
 
                 crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
@@ -203,14 +196,19 @@ re.on_draw_ui(function()
         end
 
         if imgui.tree_node("Teleport") then
-            imgui.text("WARNING: Unstable.")
-            if imgui.button("Main Hall") then re7utils.teleportPlayer(Vector3f.new(-0.622532, -0.000000, 11.295543)) end
-            imgui.same_line()
-            if imgui.button("Basement") then re7utils.teleportPlayer(Vector3f.new(-19.955242, -5.250000, 12.617932)) end
-            imgui.same_line()
+            imgui.text("Certain enemies must spawn to be able to proceed.")
+            if imgui.button("Main Hall") then re7utils.teleportPlayer(Vector3f.new(-1.082761, 0.000000, 14.237036)) end; imgui.same_line()
+            if imgui.button("Basement") then re7utils.teleportPlayer(Vector3f.new(-19.955242, -5.250000, 12.617932)) end; imgui.same_line()
+            if imgui.button("Wire Traps") then re7utils.teleportPlayer(Vector3f.new(-10.607572, -7.252150, -1.949934)) end
+            if imgui.button("Gauntlet 1") then re7utils.teleportPlayer(Vector3f.new(-21.759951, -5.250000, -2.505168)) end; imgui.same_line()
+            if imgui.button("Jack") then re7utils.teleportPlayer(Vector3f.new(0.530319, 4.000000, 4.860207)) end; imgui.same_line()
             if imgui.button("Hallway") then re7utils.teleportPlayer(Vector3f.new(22.662031, 0, 12.848048)) end
+            if imgui.button("Trailer") then re7utils.teleportPlayer(Vector3f.new(7.704638, -1.626612, 39.341892)) end; imgui.same_line()
+            if imgui.button("Green House Entrance") then re7utils.teleportPlayer(Vector3f.new(12.959277, 0.850000, 72.082726)) end
             imgui.tree_pop()
         end
+
+        imgui.spacing()
 
         if imgui.tree_node("Crate positions") then
             _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
