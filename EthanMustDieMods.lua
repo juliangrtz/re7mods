@@ -196,7 +196,7 @@ re.on_draw_ui(function()
         end
 
         if imgui.tree_node("Teleport") then
-            imgui.text("Certain enemies must spawn to be able to proceed.")
+            imgui.text("Certain enemies must spawn to proceed.")
             if imgui.button("Main Hall") then re7utils.teleportPlayer(Vector3f.new(-1.082761, 0.000000, 14.237036)) end; imgui.same_line()
             if imgui.button("Basement") then re7utils.teleportPlayer(Vector3f.new(-19.955242, -5.250000, 12.617932)) end; imgui.same_line()
             if imgui.button("Wire Traps") then re7utils.teleportPlayer(Vector3f.new(-10.607572, -7.252150, -1.949934)) end
