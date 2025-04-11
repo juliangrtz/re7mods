@@ -14,7 +14,7 @@ for k, v in pairs(default_settings) do
 end
 
 sdk.hook(
-    sdk.find_type_definition("app.PlayerDamageController"):get_method("do Start"),
+    sdk.find_type_definition("app.PlayerDamageController"):get_method("doStart"),
     function(args)
         if settings.enabled then
             sdk.to_managed_object(args[2]).IsEnableDamageEffect = false
