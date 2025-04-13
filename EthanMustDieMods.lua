@@ -31,7 +31,7 @@ local crateItems = {
     NORMAL = { "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder", "ChemicalM", "Gunpowder" },
     RARE = { "Burner", "RemedyL", "HandgunBulletL", "HandgunBulletL" },
     SUPERRARE = { "Handgun_M19", "MachineGun" },
-    LEGENDARY = { "Magnum", "HandgunBulletL", "HandgunBulletL" }
+    LEGENDARY = { "GrenadeLauncher", "HandgunBulletL", "HandgunBulletL" }
 }
 local crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
 
@@ -197,14 +197,22 @@ re.on_draw_ui(function()
 
         if imgui.tree_node("Teleport") then
             imgui.text("Certain enemies must spawn to proceed.")
-            if imgui.button("Main Hall") then re7utils.teleportPlayer(Vector3f.new(-1.082761, 0.000000, 14.237036)) end; imgui.same_line()
-            if imgui.button("Basement") then re7utils.teleportPlayer(Vector3f.new(-19.955242, -5.250000, 12.617932)) end; imgui.same_line()
+            if imgui.button("Main Hall") then re7utils.teleportPlayer(Vector3f.new(-1.082761, 0.000000, 14.237036)) end; imgui
+                .same_line()
+            if imgui.button("Basement") then re7utils.teleportPlayer(Vector3f.new(-19.955242, -5.250000, 12.617932)) end; imgui
+                .same_line()
             if imgui.button("Wire Traps") then re7utils.teleportPlayer(Vector3f.new(-10.607572, -7.252150, -1.949934)) end
-            if imgui.button("Gauntlet 1") then re7utils.teleportPlayer(Vector3f.new(-21.759951, -5.250000, -2.505168)) end; imgui.same_line()
-            if imgui.button("Jack") then re7utils.teleportPlayer(Vector3f.new(0.530319, 4.000000, 4.860207)) end; imgui.same_line()
+            if imgui.button("Gauntlet 1") then re7utils.teleportPlayer(Vector3f.new(-21.759951, -5.250000, -2.505168)) end; imgui
+                .same_line()
+            if imgui.button("Jack") then re7utils.teleportPlayer(Vector3f.new(0.530319, 4.000000, 4.860207)) end; imgui
+                .same_line()
             if imgui.button("Hallway") then re7utils.teleportPlayer(Vector3f.new(22.662031, 0, 12.848048)) end
-            if imgui.button("Trailer") then re7utils.teleportPlayer(Vector3f.new(7.704638, -1.626612, 39.341892)) end; imgui.same_line()
-            if imgui.button("Green House Entrance") then re7utils.teleportPlayer(Vector3f.new(12.959277, 0.850000, 72.082726)) end
+            if imgui.button("Trailer") then re7utils.teleportPlayer(Vector3f.new(7.704638, -1.626612, 39.341892)) end; imgui
+                .same_line()
+            if imgui.button("Green House Entrance") then
+                re7utils.teleportPlayer(Vector3f.new(12.959277, 0.850000,
+                72.082726))
+            end
             imgui.tree_pop()
         end
 
