@@ -34,6 +34,13 @@ local crateItems = {
     LEGENDARY = { "GrenadeLauncher", "HandgunBulletL", "HandgunBulletL" }
 }
 local crateIndices = { NORMAL = 0, RARE = 0, SUPERRARE = 0, LEGENDARY = 0 }
+local crateDistribution = {
+    ["Normal"] = 0,
+    ["Rare"] = 0,
+    ["SuperRare"] = 0,
+    ["Legendary"] = 0,
+}
+local orderedKeys = { "Normal", "Rare", "SuperRare", "Legendary" }
 
 local function areVectorsClose(vec1, vec2, epsilon)
     return math.abs(vec1.x - vec2.x) < epsilon and
@@ -211,19 +218,19 @@ re.on_draw_ui(function()
                 .same_line()
             if imgui.button("Green House Entrance") then
                 re7utils.teleportPlayer(Vector3f.new(12.959277, 0.850000,
-                72.082726))
+                    72.082726))
             end
             imgui.tree_pop()
         end
 
         imgui.spacing()
 
-        if imgui.tree_node("Crate positions") then
+        if imgui.tree_node("Crates") then
             _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
-            imgui.text("N = Normal (1 star)")
+            --[[ imgui.text("N = Normal (1 star)")
             imgui.text("R = Rare (2 stars)")
             imgui.text("S = Super rare (3 stars)")
-            imgui.text("L = Legendary (4 stars)")
+            imgui.text("L = Legendary (4 stars)") ]]
 
             imgui.spacing()
 
@@ -232,6 +239,11 @@ re.on_draw_ui(function()
             imgui.text("Normal crate near spawn (2): " ..
                 tostring(hasCrateAtPos(Vector3f.new(-3.277556, -1.154342, 21.520510), "Normal")))
 
+            imgui.spacing()
+
+            for _, key in ipairs(orderedKeys) do
+                imgui.text(key .. " boxes: " .. crateDistribution[key])
+            end
             imgui.tree_pop()
         end
 
@@ -240,7 +252,7 @@ re.on_draw_ui(function()
                 if restartControl then restartControl:requestRestart() end
             end
 
-            if imgui.button("Disable enemy AI") then end
+            --if imgui.button("Disable enemy AI") then end
 
             if imgui.button("Spawn statue with Albert") then
                 local playerPos = re7utils.get_localplayer():get_Transform():get_Position()
@@ -276,6 +288,19 @@ sdk.hook(
             log.debug("[Ethan Must Die Mods] Box at " ..
                 re7utils.vec3tostring(box:get_Transform():get_Position()) .. " :: " .. box:get_Name())
         end
+
+        local name = box:get_Name()
+        if name == "sm9133_IMD_NormalBox" then
+            crateDistribution["Normal"] = crateDistribution["Normal"] + 1
+        elseif name == "sm9133_IMD_RareBox" then
+            crateDistribution["Rare"] = crateDistribution["Rare"] + 1
+        elseif name == "sm9133_IMD_SuperRareBox" then
+            crateDistribution["SuperRare"] = crateDistribution["SuperRare"] + 1
+        elseif name == "sm2619_IMD_LegendaryBox" then
+            crateDistribution["Legendary"] = crateDistribution["Legendary"] + 1
+        else
+            log.debug("WTF: " .. name)
+        end
     end,
     function(retval) return retval end
 )
@@ -285,6 +310,12 @@ sdk.hook(
     sdk.find_type_definition("app.ItemBoxLotteryManagerIMD"):get_method("onDestroy"),
     function(_)
         crates = {}
+        crateDistribution = {
+            ["Normal"] = 0,
+            ["Rare"] = 0,
+            ["SuperRare"] = 0,
+            ["Legendary"] = 0,
+        }
         re7utils.clearDebugConsole()
     end,
     function(retval) return retval end
@@ -306,6 +337,8 @@ sdk.hook(
     end,
     function(retval) return retval end --post
 )
+
+
 
 local function getCrateLabelAndColor(name)
     if name == "sm9133_IMD_NormalBox" then
