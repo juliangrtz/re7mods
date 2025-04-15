@@ -21,7 +21,6 @@ sdk.hook(
 local scene = sdk.call_native_func(sdk.get_native_singleton("via.SceneManager"), sdk.find_type_definition("via.SceneManager"), "get_CurrentScene()")
 local folder = scene:findFolder("Chapter/Chapter4")
 
-
 re.on_draw_ui(function()
     if imgui.tree_node("Developer Tools") then
         _, freezeAmmo = imgui.checkbox("Freeze ammo", freezeAmmo)
