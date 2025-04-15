@@ -10,11 +10,23 @@ sdk.hook(
     function(r) return r end
 )
 
+sdk.hook(
+    sdk.find_type_definition("via.Scene"):get_method("findFolder"),
+    function(args)
+        print(sdk.to_managed_object(args[3]):ToString())
+    end,
+    function(r) return r end
+)
+
+local scene = sdk.call_native_func(sdk.get_native_singleton("via.SceneManager"), sdk.find_type_definition("via.SceneManager"), "get_CurrentScene()")
+local folder = scene:findFolder("Chapter/Chapter4")
+
+
 re.on_draw_ui(function()
     if imgui.tree_node("Developer Tools") then
         _, freezeAmmo = imgui.checkbox("Freeze ammo", freezeAmmo)
 
---[[         if imgui.button("Copy player position to clipboard") then
+        --[[         if imgui.button("Copy player position to clipboard") then
             local player = re7utils.get_localplayer()
             if not player then return end
             sdk.copy_to_clipboard(re7utils.vec3tostring(player:get_Transform():get_Position()))
