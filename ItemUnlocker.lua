@@ -1,5 +1,5 @@
 -- Adds various items to the item box that are normally not available.
--- v1.0
+-- v1.1
 -- by d3sc0le
 
 if reframework:get_game_name() ~= "re7" then --or sdk.get_tdb_version() ~= 70 then
@@ -170,7 +170,8 @@ local item_friendly_names = {
 -- region Settings
 local default_settings = {
 	enabled = true,
-	requiredAxeHitsJack2 = 10,
+	jackSoftlockFix = false,
+	requiredHitsJack2 = 10,
 	itemQuantity = 100,
 	items = {
 		["Bar"] = false,
@@ -341,44 +342,23 @@ end
 
 local em8010Core = nil -- Em8010 is Jack's mutated head (weak spot)
 sdk.hook(sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("doStart"),
-	function(args)
-		em8010Core = sdk.to_managed_object(args[2])
-		print("Got Em8010Core object pointer.")
-	end,
+	function(args) em8010Core = sdk.to_managed_object(args[2]) end,
 	function(retval) return retval end
 )
 
-local axeHits = 0
-
+local jackHits = 0
 sdk.hook(
 	sdk.find_type_definition("app.Em8010.Em8010Core"):get_method("calcDamage"),
-	function(args)
-		local dmgInfo = sdk.to_managed_object(args[3])
-		local dmg = { "Damage", "DamageMax", "Stun", "StunMax" }
-		for i = 1, #dmg do log.debug(dmg[i] .. ": " .. dmgInfo:get_field(dmg[i])) end
+	function(_)
+		if not settings.jackSoftlockFix or not em8010Core then return end
 
-		local attackGameObject = dmgInfo:get_field("AttackGameObjectList")[0]
-		local attackWeapon = attackGameObject:call("get_Name")
-
-		if string.find(attackWeapon, "Axe") then
-			axeHits = axeHits + 1
-			print(axeHits .. " hits with the axe")
-		end
-
-		print("-----------------------------------------------")
-
-		if axeHits > 0 and axeHits % settings.requiredAxeHits == 0 then
-			if em8010Core then
-				-- namespace app::Em8010::Em8010Core {
-				em8010Core:tryOrder(1) -- Open
-			else
-				print("Failed to get Em8010Core!")
-			end
+		jackHits = jackHits + 1
+		if jackHits > 0 and jackHits % settings.requiredHitsJack2 == 0 then
+			-- app::Em8010::Em8010Core
+			em8010Core:tryOrder(1) -- Open
 		end
 	end,
-	function(retval)
-		return retval
-	end
+	function(retval) return retval end
 )
 
 -- endregion
@@ -388,9 +368,10 @@ sdk.hook(
 	function(_)
 		if not settings.enabled then return end
 
-		local inventory = get_component(get_localplayer(), "app.Inventory") or re.msg("Inventory nil")
-		local itemBoxData = inventory:get_field("<ItemBoxData>k__BackingField")
+		local inventory = get_component(get_localplayer(), "app.Inventory")
+		if not inventory then return end
 
+		local itemBoxData = inventory:get_field("<ItemBoxData>k__BackingField")
 		for itemId, enabled in pairs(settings.items) do
 			if enabled then
 				local hasItem = inventory:call("hasItemIncludeItemBox(System.String, System.Boolean)", itemId, true)
@@ -405,6 +386,12 @@ sdk.hook(
 	function(retval) return retval end
 )
 
+local function setExtendLv(lv)
+	local inventory = get_component(get_localplayer(), "app.Inventory")
+	if not inventory then return end
+	inventory:setExtendLv(lv)
+end
+
 local function render_checkbox(item_id)
 	local label = item_friendly_names[item_id] or item_id
 	local changed, new_val = imgui.checkbox(label, settings.items[item_id])
@@ -414,6 +401,9 @@ local function render_checkbox(item_id)
 	end
 end
 
+local changedSoftlock
+local changedHits
+local toggledOnOff
 re.on_draw_ui(function()
 	if imgui.tree_node("Item Unlocker") then
 		imgui.text(
@@ -447,23 +437,35 @@ re.on_draw_ui(function()
 		imgui.spacing()
 		imgui.begin_rect()
 
+		imgui.begin_rect()
+		imgui.text(
+			"It's impossible to expose Jack's weak spot\nwith certain weapons like the axe\nin the basement fight.")
+		imgui.text(
+			"Thus, his weak spot can be shown\nafter a certain number of hits you can define here.")
+		changedSoftlock, settings.jackSoftlockFix = imgui.checkbox("Fix softlock during Jack 2 fight",
+			settings.jackSoftlockFix)
+
+		if settings.jackSoftlockFix then
+			changedHits, settings.requiredHitsJack2 = imgui.slider_int("hits", settings.requiredHitsJack2, 1, 20, nil)
+			if changedSoftlock or changedHits then json.dump_file(settingsFile, settings) end
+		end
+		imgui.end_rect(2)
+
+		if imgui.tree_node("Inventory") then
+			imgui.text("WARNING: Do not make your inventory\nsmaller when you have a lot of items in it!")
+			imgui.text("This can softlock the game.")
+			if imgui.button("No backpack") then setExtendLv(0) end
+			if imgui.button("First backpack") then setExtendLv(1) end
+			if imgui.button("Second backpack") then setExtendLv(2) end
+			imgui.tree_pop()
+		end
+
 		if imgui.tree_node("Weapons") then
 			if imgui.tree_node("Melee") then
 				render_checkbox("Bar")
 				render_checkbox("ChainSaw")
 				render_checkbox("CircularSaw")
 				render_checkbox("HandAxe")
-				imgui.begin_rect()
-				imgui.text("Hits until Jack 2 reveals weak spot")
-				_, settings.requiredAxeHitsJack2 = imgui.slider_int("hits", settings.requiredAxeHitsJack2, 1, 20, nil)
-
-				if imgui.is_item_hovered() then
-					imgui.set_tooltip(
-						"Normally it is not possible to expose Jack's weak spot with the axe during the fight in the basement.\n" ..
-						"Thus, his weak spot is forced to be exposed after a certain number of hits you can define here."
-					)
-				end
-				imgui.end_rect(2)
 				render_checkbox("Knife")
 				render_checkbox("MiaKnife")
 				imgui.tree_pop()
@@ -590,9 +592,7 @@ re.on_draw_ui(function()
 		end
 
 		if imgui.tree_node("Other") then
-			for _, key in ipairs({ "SaveTape", "SupplyBoxA", "SupplyBoxOpenedA", "SupplyBoxB", "SupplyBoxOpenedB", "SupplyBoxC", "SupplyBoxOpenedC" }) do
-				render_checkbox(key)
-			end
+			render_checkbox("SaveTape")
 			imgui.tree_pop()
 		end
 
