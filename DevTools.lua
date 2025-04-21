@@ -10,14 +10,6 @@ sdk.hook(
     function(r) return r end
 )
 
-sdk.hook(
-    sdk.find_type_definition("via.Scene"):get_method("findFolder"),
-    function(args)
-        print(sdk.to_managed_object(args[3]):ToString())
-    end,
-    function(r) return r end
-)
-
 re.on_draw_ui(function()
     if imgui.tree_node("Developer Tools") then
         _, freezeAmmo = imgui.checkbox("Freeze ammo", freezeAmmo)
