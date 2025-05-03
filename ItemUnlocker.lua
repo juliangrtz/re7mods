@@ -7,6 +7,7 @@ if reframework:get_game_name() ~= "re7" then --or sdk.get_tdb_version() ~= 70 th
 	return
 end
 
+-- TODO Extract to separate JSON file
 local item_friendly_names = {
 	-- Weapons - Melee
 	["Bar"] = "Crowbar",
