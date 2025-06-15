@@ -375,12 +375,9 @@ sdk.hook(
 		local itemBoxData = inventory:get_field("<ItemBoxData>k__BackingField")
 		for itemId, enabled in pairs(settings.items) do
 			if enabled then
-				local hasItem = inventory:call("hasItemIncludeItemBox(System.String, System.Boolean)", itemId, true)
-				if not hasItem then
-					local quantity = tonumber(settings.itemQuantity)
-					local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
-					itemBoxData:call(signature, itemId, quantity, nil)
-				end
+				local quantity = tonumber(settings.itemQuantity)
+				local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
+				itemBoxData:call(signature, itemId, quantity, nil)
 			end
 		end
 	end,
