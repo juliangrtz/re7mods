@@ -1,5 +1,5 @@
 -- Adds various items to the item box that are normally not available.
--- v1.1
+-- v1.2
 -- by d3sc0le
 
 if reframework:get_game_name() ~= "re7" then --or sdk.get_tdb_version() ~= 70 then
@@ -337,7 +337,7 @@ local function get_component(game_object, type_name)
 end
 
 -- region Jack 2 softlock fix
--- Without this – admittedly wacky – fix, it is not possible to expose Jack's weak spot with the axe
+-- Without this – admittedly wacky – fix, it is not possible to expose Jack's weak spot with certain weapons
 -- during the fight in the basement when getting the red dog head.
 -- If you figure out a better solution that is closer to Jack's original behavior feel free to contact me!
 
