@@ -362,18 +362,6 @@ sdk.hook(
 
 -- endregion
 
--- Grab InventoryMenu object pointer
-local inventoryMenu = nil
-sdk.hook(
-	sdk.find_type_definition("app.InventoryMenu"):get_method("onOpenUpdate"),
-	function(args)
-		if inventoryMenu ~= nil then return end
-		inventoryMenu = sdk.to_managed_object(args[2])
-		log.debug("got it")
-	end,
-	function(_) end
-)
-
 local function getItemBoxData()
 	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
 	if not inventory then return end
@@ -396,12 +384,7 @@ local function addItemsToInventory()
 	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
 	if not inventory then return end
 
-	local go = inventoryMenu:createItemInstance("Herb", 1, nil)
-	if not go then return end
-	local i = getComponent(go, "app.Item")
-	if not i then return end
-
-	inventory:addItem(go, i)
+	-- hmmm...
 end
 
 local function clearItemBox()
