@@ -1,4 +1,4 @@
--- Adds various items to the item box that are normally not available.
+-- Adds various items to the item box and inventory that are normally not available.
 -- v1.2
 -- by d3sc0le
 
@@ -7,7 +7,6 @@ if reframework:get_game_name() ~= "re7" then --or sdk.get_tdb_version() ~= 70 th
 	return
 end
 
--- TODO Extract to separate JSON file
 local item_friendly_names = {
 	-- Weapons - Melee
 	["Bar"] = "Crowbar",
@@ -170,7 +169,6 @@ local item_friendly_names = {
 
 -- region Settings
 local default_settings = {
-	enabled = true,
 	jackSoftlockFix = false,
 	requiredHitsJack2 = 10,
 	itemQuantity = 100,
@@ -314,7 +312,7 @@ for k, v in pairs(default_settings) do
 end
 --endregion
 
-local function get_localplayer()
+local function getLocalPlayer()
 	local object_man = sdk.get_managed_singleton("app.ObjectManager")
 
 	if not object_man then
@@ -325,7 +323,7 @@ local function get_localplayer()
 end
 
 local known_typeofs = {}
-local function get_component(game_object, type_name)
+local function getComponent(game_object, type_name)
 	local t = known_typeofs[type_name] or sdk.typeof(type_name)
 
 	if t == nil then
@@ -364,31 +362,61 @@ sdk.hook(
 
 -- endregion
 
+-- Grab InventoryMenu object pointer
+local inventoryMenu = nil
 sdk.hook(
-	sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"),
-	function(_)
-		if not settings.enabled then return end
-
-		local inventory = get_component(get_localplayer(), "app.Inventory")
-		if not inventory then return end
-
-		local itemBoxData = inventory:get_field("<ItemBoxData>k__BackingField")
-		for itemId, enabled in pairs(settings.items) do
-			if enabled then
-				local quantity = tonumber(settings.itemQuantity)
-				local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
-				itemBoxData:call(signature, itemId, quantity, nil)
-			end
-		end
+	sdk.find_type_definition("app.InventoryMenu"):get_method("onOpenUpdate"),
+	function(args)
+		if inventoryMenu ~= nil then return end
+		inventoryMenu = sdk.to_managed_object(args[2])
+		log.debug("got it")
 	end,
-	function(retval) return retval end
+	function(_) end
 )
 
+local function getItemBoxData()
+	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
+	if not inventory then return end
+	return inventory:get_field("<ItemBoxData>k__BackingField")
+end
+
+local function addItemsToItemBox()
+	for itemId, enabled in pairs(settings.items) do
+		if enabled then
+			local quantity = tonumber(settings.itemQuantity)
+			local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
+			local itemBoxData = getItemBoxData()
+			if not itemBoxData then return end
+			itemBoxData:call(signature, itemId, quantity, nil)
+		end
+	end
+end
+
+local function addItemsToInventory()
+	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
+	if not inventory then return end
+
+	local go = inventoryMenu:createItemInstance("Herb", 1, nil)
+	if not go then return end
+	local i = getComponent(go, "app.Item")
+	if not i then return end
+
+	inventory:addItem(go, i)
+end
+
+local function clearItemBox()
+	local itemBoxData = getItemBoxData()
+	if not itemBoxData then return end
+	itemBoxData:clearItems()
+end
+
 local function setExtendLv(lv)
-	local inventory = get_component(get_localplayer(), "app.Inventory")
+	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
 	if not inventory then return end
 	inventory:setExtendLv(lv)
 end
+
+
 
 local function render_checkbox(item_id)
 	local label = item_friendly_names[item_id] or item_id
@@ -401,23 +429,34 @@ end
 
 local changedSoftlock
 local changedHits
-local toggledOnOff
+
 re.on_draw_ui(function()
 	if imgui.tree_node("Item Unlocker") then
-		imgui.text(
-			"Just select the items you want.\nThey will be added to the item box.\nSome may not work as expected.")
 		imgui.spacing()
-		toggledOnOff, settings.enabled = imgui.checkbox("Enabled", settings.enabled)
-		if not settings.enabled then
+
+		if imgui.tree_node("Item box") then
+			if imgui.button("Add selected items") then addItemsToItemBox() end
+			if imgui.button("Remove all items") then clearItemBox() end
 			imgui.tree_pop()
-			return
 		end
 
-		if toggledOnOff then json.dump_file(settingsFile, settings) end
+		if imgui.tree_node("Inventory") then
+			if imgui.button("Add selected items") then addItemsToInventory() end
+			if imgui.button("Remove all items") then clearItemBox() end
+			imgui.spacing()
+
+			imgui.text("WARNING: Do not make your inventory\nsmaller when you have a lot of items in it!")
+			imgui.text("This can softlock the game.")
+			if imgui.button("No backpack") then setExtendLv(0) end
+			if imgui.button("First backpack") then setExtendLv(1) end
+			if imgui.button("Second backpack") then setExtendLv(2) end
+
+			imgui.tree_pop()
+		end
 
 		_, settings.itemQuantity, _, _ = imgui.input_text("Quantity", settings.itemQuantity, 1 << 0) -- Allow 0123456789.+-*/
 
-		if imgui.button("Select All") then
+		if imgui.button("Select all items") then
 			for item_id, _ in pairs(settings.items) do
 				settings.items[item_id] = true
 			end
@@ -426,13 +465,15 @@ re.on_draw_ui(function()
 
 		imgui.same_line()
 
-		if imgui.button("Unselect All") then
+		if imgui.button("Unselect all items") then
 			for item_id, _ in pairs(settings.items) do
 				settings.items[item_id] = false
 			end
 			json.dump_file(settingsFile, settings)
 		end
 		imgui.spacing()
+
+		imgui.text("List of items")
 		imgui.begin_rect()
 
 		imgui.begin_rect()
@@ -449,14 +490,7 @@ re.on_draw_ui(function()
 		end
 		imgui.end_rect(2)
 
-		if imgui.tree_node("Inventory") then
-			imgui.text("WARNING: Do not make your inventory\nsmaller when you have a lot of items in it!")
-			imgui.text("This can softlock the game.")
-			if imgui.button("No backpack") then setExtendLv(0) end
-			if imgui.button("First backpack") then setExtendLv(1) end
-			if imgui.button("Second backpack") then setExtendLv(2) end
-			imgui.tree_pop()
-		end
+
 
 		if imgui.tree_node("Weapons") then
 			if imgui.tree_node("Melee") then
