@@ -388,21 +388,14 @@ sdk.hook(sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"), fun
 end, function(retval) return retval end)
 
 local function addItemsToInventory()
+	--for itemId, enabled in pairs(settings.items) do
+	--if enabled then
 	local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
 	local itemBoxData = getItemBoxData()
 	if not itemBoxData then return end
 	itemBoxData:call(signature, "Herb", 1, nil)
 
-	-- STEP 1: Create and populate ItemParam
-	local param_type = sdk.find_type_definition("app.ItemBoxData.ItemParam")
-	local param = param_type:create_instance()
-	param:call(".ctor")
-
-	param:set_field("ItemDataID", "Herb") -- string
-	param:set_field("Num", 1)          -- int32
-	param:set_field("SlotNo", 1)       -- optional unless position matters
-	param:set_field("SortOrder", 0)    -- safe default
-	param:set_field("WeaponGunSaveData", nil)
+	local itemParam = itemBoxData:findItem("Herb")
 
 	-- STEP 2: Get InventoryMenu (assuming args[2] from onOpen was saved earlier)
 	local inventoryMenu = saved_inventory_menu_ref
@@ -413,7 +406,9 @@ local function addItemsToInventory()
 
 	-- STEP 3: Call moveItemBoxToInventory
 	-- Signature: moveItemBoxToInventory(app.ItemBoxData.ItemParam, System.Int32)
-	inventoryMenu:moveItemBoxToInventory(param, 1)
+	inventoryMenu:moveItemBoxToInventory(itemParam, 1)
+	--end
+	--end
 end
 
 local function clearItemBox()
