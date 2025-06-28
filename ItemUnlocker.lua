@@ -382,28 +382,38 @@ end
 
 local saved_inventory_menu_ref
 sdk.hook(sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"), function(args)
-    saved_inventory_menu_ref = sdk.to_managed_object(args[2])
+	if saved_inventory_menu_ref ~= nil then return end
+	log.debug("got ref")
+	saved_inventory_menu_ref = sdk.to_managed_object(args[2])
 end, function(retval) return retval end)
 
 local function addItemsToInventory()
-	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
-	if not inventory then return end
+	local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
+	local itemBoxData = getItemBoxData()
+	if not itemBoxData then return end
+	itemBoxData:call(signature, "Herb", 1, nil)
 
-	local itemSlotManager = inventory:get_field("<ItemSlotManager>k__BackingField")
-	if not itemSlotManager then return end
+	-- STEP 1: Create and populate ItemParam
+	local param_type = sdk.find_type_definition("app.ItemBoxData.ItemParam")
+	local param = param_type:create_instance()
+	param:call(".ctor")
 
-	local item_type = sdk.find_type_definition("app.Item")
-	local item = item_type:create_instance()
+	param:set_field("ItemDataID", "Herb") -- string
+	param:set_field("Num", 1)          -- int32
+	param:set_field("SlotNo", 1)       -- optional unless position matters
+	param:set_field("SortOrder", 0)    -- safe default
+	param:set_field("WeaponGunSaveData", nil)
 
-	-- Set required fields
-	item:set_field("ItemDataID", "Herb") -- System.String
-	item:set_field("ItemStackNum", 1) -- System.Int32
-	item:set_field("SlotNo", 1)    -- You can change slot index later
+	-- STEP 2: Get InventoryMenu (assuming args[2] from onOpen was saved earlier)
+	local inventoryMenu = saved_inventory_menu_ref
+	if not inventoryMenu then
+		log.error("InventoryMenu is nil")
+		return
+	end
 
-	-- Optionally set other safe defaults (if needed)
-	item:set_field("RoomId", 0)
-
-	itemSlotManager:add(item, 1)
+	-- STEP 3: Call moveItemBoxToInventory
+	-- Signature: moveItemBoxToInventory(app.ItemBoxData.ItemParam, System.Int32)
+	inventoryMenu:moveItemBoxToInventory(param, 1)
 end
 
 local function clearItemBox()
