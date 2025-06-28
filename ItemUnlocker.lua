@@ -381,9 +381,7 @@ local function addItemsToItemBox()
 end
 
 local saved_inventory_menu_ref
-sdk.hook(sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"), function(args)
-	if saved_inventory_menu_ref ~= nil then return end
-	log.debug("got ref")
+sdk.hook(sdk.find_type_definition("app.InventoryMenu"):get_method("discardConfirmDecideSoundAction"), function(args)
 	saved_inventory_menu_ref = sdk.to_managed_object(args[2])
 end, function(retval) return retval end)
 
@@ -394,8 +392,9 @@ local function addItemsToInventory()
 	local itemBoxData = getItemBoxData()
 	if not itemBoxData then return end
 	itemBoxData:call(signature, "Herb", 1, nil)
-
 	local itemParam = itemBoxData:findItem("Herb")
+
+	sdk.get_managed_singleton("app.MenuManager"):openInventoryMenu()
 
 	-- STEP 2: Get InventoryMenu (assuming args[2] from onOpen was saved earlier)
 	local inventoryMenu = saved_inventory_menu_ref
