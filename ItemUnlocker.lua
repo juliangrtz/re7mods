@@ -380,24 +380,30 @@ local function addItemsToItemBox()
 	end
 end
 
+local saved_inventory_menu_ref
+sdk.hook(sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"), function(args)
+    saved_inventory_menu_ref = sdk.to_managed_object(args[2])
+end, function(retval) return retval end)
 
 local function addItemsToInventory()
-	local listdata_type = sdk.find_type_definition("app.AddItemListData")
-	local listdata = listdata_type:create_instance()
-
-	local data_type = sdk.find_type_definition("app.AddItemListData.Data")
-	local item = data_type:create_instance()
-	item:set_field("ItemDataID", "Herb")
-	item:set_field("Num", 1)
-
-	local arr = sdk.create_managed_array("app.AddItemListData.Data", 1)
-	arr[0] = item
-
-	listdata:set_field("_AddItems", arr)
-
 	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
 	if not inventory then return end
-	listdata:call("addItem2Inventory(app.Inventory)", inventory)
+
+	local itemSlotManager = inventory:get_field("<ItemSlotManager>k__BackingField")
+	if not itemSlotManager then return end
+
+	local item_type = sdk.find_type_definition("app.Item")
+	local item = item_type:create_instance()
+
+	-- Set required fields
+	item:set_field("ItemDataID", "Herb") -- System.String
+	item:set_field("ItemStackNum", 1) -- System.Int32
+	item:set_field("SlotNo", 1)    -- You can change slot index later
+
+	-- Optionally set other safe defaults (if needed)
+	item:set_field("RoomId", 0)
+
+	itemSlotManager:add(item, 1)
 end
 
 local function clearItemBox()
