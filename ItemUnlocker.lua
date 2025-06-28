@@ -380,11 +380,24 @@ local function addItemsToItemBox()
 	end
 end
 
+
 local function addItemsToInventory()
+	local listdata_type = sdk.find_type_definition("app.AddItemListData")
+	local listdata = listdata_type:create_instance()
+
+	local data_type = sdk.find_type_definition("app.AddItemListData.Data")
+	local item = data_type:create_instance()
+	item:set_field("ItemDataID", "Herb")
+	item:set_field("Num", 1)
+
+	local arr = sdk.create_managed_array("app.AddItemListData.Data", 1)
+	arr[0] = item
+
+	listdata:set_field("_AddItems", arr)
+
 	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
 	if not inventory then return end
-
-	-- hmmm...
+	listdata:call("addItem2Inventory(app.Inventory)", inventory)
 end
 
 local function clearItemBox()
