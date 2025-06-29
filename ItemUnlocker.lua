@@ -1,6 +1,6 @@
 -- Adds various items to the item box and inventory that are normally not available.
--- v1.2
 -- by d3sc0le
+local version = "1.2"
 
 if reframework:get_game_name() ~= "re7" then --or sdk.get_tdb_version() ~= 70 then
 	re.msg("[Item Unlocker] Only compatible with RE7!")
@@ -380,34 +380,35 @@ local function addItemsToItemBox()
 	end
 end
 
-local saved_inventory_menu_ref
-sdk.hook(sdk.find_type_definition("app.InventoryMenu"):get_method("discardConfirmDecideSoundAction"), function(args)
-	saved_inventory_menu_ref = sdk.to_managed_object(args[2])
+local function clearInventory()
+	local inventory = getComponent(getLocalPlayer(), "app.Inventory")
+	if not inventory then return end
+	inventory:RemoveListAll()
+end
+
+local inventoryMenu
+sdk.hook(sdk.find_type_definition("app.InventoryMenu"):get_method("onOpen"), function(args)
+	inventoryMenu = sdk.to_managed_object(args[2])
 end, function(retval) return retval end)
 
 local function addItemsToInventory()
-	--for itemId, enabled in pairs(settings.items) do
-	--if enabled then
-	local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
-	local itemBoxData = getItemBoxData()
-	if not itemBoxData then return end
-	itemBoxData:call(signature, "Herb", 1, nil)
-	local itemParam = itemBoxData:findItem("Herb")
+	for itemId, enabled in pairs(settings.items) do
+		if enabled then
+			local inventory = getComponent(getLocalPlayer(), "app.Inventory")
+			if not inventory then return end
+			local emptySlots = inventory:getEmptySlotNum()
+			if (emptySlots - 4) <= 0 then return end -- Quick slots don't count :/
 
-	sdk.get_managed_singleton("app.MenuManager"):openInventoryMenu()
+			local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
+			local itemBoxData = getItemBoxData()
+			if not itemBoxData then return end
+			itemBoxData:call(signature, itemId, 1, nil)
+			local itemParam = itemBoxData:findItem(itemId)
 
-	-- STEP 2: Get InventoryMenu (assuming args[2] from onOpen was saved earlier)
-	local inventoryMenu = saved_inventory_menu_ref
-	if not inventoryMenu then
-		log.error("InventoryMenu is nil")
-		return
+			if not inventoryMenu then return end
+			inventoryMenu:moveItemBoxToInventory(itemParam, 1)
+		end
 	end
-
-	-- STEP 3: Call moveItemBoxToInventory
-	-- Signature: moveItemBoxToInventory(app.ItemBoxData.ItemParam, System.Int32)
-	inventoryMenu:moveItemBoxToInventory(itemParam, 1)
-	--end
-	--end
 end
 
 local function clearItemBox()
@@ -435,9 +436,9 @@ end
 
 local changedSoftlock
 local changedHits
-
 re.on_draw_ui(function()
 	if imgui.tree_node("Item Unlocker") then
+		imgui.text("Version " .. version)
 		imgui.spacing()
 
 		if imgui.tree_node("Item box") then
@@ -447,12 +448,16 @@ re.on_draw_ui(function()
 		end
 
 		if imgui.tree_node("Inventory") then
+			imgui.text_colored("NOTE: The following features are\nexperimental and may crash the game!", 0xFF0000FF)
+			imgui.text("Your inventory must be opened and then\nre-opened when adding or removing items.")
+			imgui.text("Do not excessively add items,\nthis will crash the game.\nDecrease the quantity before.")
 			if imgui.button("Add selected items") then addItemsToInventory() end
-			if imgui.button("Remove all items") then clearItemBox() end
+			if imgui.button("Remove all items") then clearInventory() end
+
 			imgui.spacing()
 
-			imgui.text("WARNING: Do not make your inventory\nsmaller when you have a lot of items in it!")
-			imgui.text("This can softlock the game.")
+			imgui.text("Do not make your inventory\nsmaller when you have a lot of items in it!")
+			imgui.text("This will softlock the game.")
 			if imgui.button("No backpack") then setExtendLv(0) end
 			if imgui.button("First backpack") then setExtendLv(1) end
 			if imgui.button("Second backpack") then setExtendLv(2) end
@@ -460,8 +465,30 @@ re.on_draw_ui(function()
 			imgui.tree_pop()
 		end
 
-		_, settings.itemQuantity, _, _ = imgui.input_text("Quantity", settings.itemQuantity, 1 << 0) -- Allow 0123456789.+-*/
+		if imgui.tree_node("Settings") then
+			--imgui.begin_rect()
+			imgui.text("The number of each item to add.")
+			imgui.text("Choose a low number when adding items\nto your inventory!")
+			_, settings.itemQuantity, _, _ = imgui.input_text("items", settings.itemQuantity, 1 << 0) -- Allow 0123456789.+-*/
 
+			imgui.spacing()
+			imgui.text(
+				"It's impossible to expose Jack's weak spot\nwith certain weapons like the axe\nin the basement fight.")
+			imgui.text(
+				"His weak spot can be forcibly shown\nafter a certain number of hits you can set here.")
+			changedSoftlock, settings.jackSoftlockFix = imgui.checkbox("Fix softlock during Jack 2 fight",
+				settings.jackSoftlockFix)
+
+			if settings.jackSoftlockFix then
+				changedHits, settings.requiredHitsJack2 = imgui.slider_int("hits", settings.requiredHitsJack2, 1, 20, nil)
+				if changedSoftlock or changedHits then json.dump_file(settingsFile, settings) end
+			end
+			--imgui.end_rect(2)
+		end
+
+		imgui.spacing()
+
+		imgui.text("List of items")
 		if imgui.button("Select all items") then
 			for item_id, _ in pairs(settings.items) do
 				settings.items[item_id] = true
@@ -479,25 +506,7 @@ re.on_draw_ui(function()
 		end
 		imgui.spacing()
 
-		imgui.text("List of items")
 		imgui.begin_rect()
-
-		imgui.begin_rect()
-		imgui.text(
-			"It's impossible to expose Jack's weak spot\nwith certain weapons like the axe\nin the basement fight.")
-		imgui.text(
-			"Thus, his weak spot can be shown\nafter a certain number of hits you can define here.")
-		changedSoftlock, settings.jackSoftlockFix = imgui.checkbox("Fix softlock during Jack 2 fight",
-			settings.jackSoftlockFix)
-
-		if settings.jackSoftlockFix then
-			changedHits, settings.requiredHitsJack2 = imgui.slider_int("hits", settings.requiredHitsJack2, 1, 20, nil)
-			if changedSoftlock or changedHits then json.dump_file(settingsFile, settings) end
-		end
-		imgui.end_rect(2)
-
-
-
 		if imgui.tree_node("Weapons") then
 			if imgui.tree_node("Melee") then
 				render_checkbox("Bar")
