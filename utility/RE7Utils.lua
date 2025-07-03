@@ -1,11 +1,9 @@
 local re7utils = {}
 
--- Clears the debug console's output.
 function re7utils.clearDebugConsole()
     for _ = 0, 100 do log.debug("") end
 end
 
--- For the draw API
 function re7utils.rgbToInt(r, g, b, a)
     local t = {
         R = r,
@@ -22,8 +20,6 @@ function re7utils.rgbToInt(r, g, b, a)
 
     return t
 end
-
--- Various utility functions
 
 function re7utils.sleep(a)
     local sec = tonumber(os.clock() + a);
@@ -64,7 +60,6 @@ function re7utils.get_component(game_object, type_name)
     return game_object:call("getComponent(System.Type)", t)
 end
 
---region Lookup tables
 re7utils.ItemFriendlyNames = {
     -- Weapons - Melee
     ["Bar"] = "Crowbar",
@@ -297,7 +292,5 @@ re7utils.EMDItems = {
 }
 
 --endregion
-
-
 
 return re7utils
