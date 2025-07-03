@@ -1,4 +1,4 @@
--- Adds various items to the item box and inventory that are normally not available.
+-- Allows RNG manipulation in Ethan Must Die.
 -- by d3sc0le
 local version = "1.0"
 
@@ -125,7 +125,6 @@ local function manipulateCrateRNG(destroyedCrateType)
                 item.ItemID = wp.itemID
                 item.StackNum = wp.stackNum
             else
-                --log.debug("[Ethan Must Die Mods] Item " .. newItem .. " not in EMDWeapons table?!")
                 item.WeaponID = newItem
                 item.ItemID = newItem
             end
@@ -144,18 +143,8 @@ sdk.hook(
     function(r) return r end
 )
 
-local damageController
-sdk.hook(
-    sdk.find_type_definition("app.DamageController"):get_method("doUpdate"),
-    function(args)
-        if damageController then return end
-        damageController = sdk.to_managed_object(args[2])
-    end,
-    function(r) return r end
-)
-
 re.on_draw_ui(function()
-    if imgui.tree_node("Ethan Must Die Mods") then
+    if imgui.tree_node("Ethan Must Die Trainer") then
         imgui.text("Version " .. version)
         imgui.spacing()
 
