@@ -402,11 +402,13 @@ local function addItemsToInventory()
 			local signature = "addItem(System.String, System.Int32, app.WeaponGun.WeaponGunSaveData)"
 			local itemBoxData = getItemBoxData()
 			if not itemBoxData then return end
-			itemBoxData:call(signature, itemId, 1, nil)
+
+			local quantity = tonumber(settings.itemQuantity)
+			itemBoxData:call(signature, itemId, quantity, nil)
 			local itemParam = itemBoxData:findItem(itemId)
 
 			if not inventoryMenu then return end
-			inventoryMenu:moveItemBoxToInventory(itemParam, 1)
+			inventoryMenu:moveItemBoxToInventory(itemParam, quantity)
 		end
 	end
 end

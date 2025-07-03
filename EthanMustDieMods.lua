@@ -1,3 +1,7 @@
+-- Adds various items to the item box and inventory that are normally not available.
+-- by d3sc0le
+local version = "1.0"
+
 -- IDA regex: ^app.*IMD.*
 -- app_DLCContentSceneManager__addChapter3_IMD_UpLayer318169( red sky?
 -- app_DropItemPoolIMD___c__DisplayClass3_0___getTargetInstance_b__0360444 start with knife?
@@ -152,9 +156,12 @@ sdk.hook(
 
 re.on_draw_ui(function()
     if imgui.tree_node("Ethan Must Die Mods") then
+        imgui.text("Version " .. version)
+        imgui.spacing()
+
         imgui.begin_rect()
 
-        imgui.text("This tool shall only be used for experimentation\nand not official speedruns.")
+        imgui.text_colored("This tool shall only be used for experimentation\nand not official speedruns!", 0xFF0000FF)
         _, settings.manipulateRNG = imgui.checkbox("Manipulate RNG", settings.manipulateRNG)
 
         if imgui.tree_node("Developer Tools") then
@@ -203,7 +210,7 @@ re.on_draw_ui(function()
         end
 
         if imgui.tree_node("Teleport") then
-            imgui.text("Certain enemies must spawn to proceed.")
+            imgui.text("Certain enemies must spawn to proceed to the next area.")
             if imgui.button("Main Hall") then re7utils.teleportPlayer(Vector3f.new(-1.082761, 0.000000, 14.237036)) end; imgui
                 .same_line()
             if imgui.button("Basement") then re7utils.teleportPlayer(Vector3f.new(-19.955242, -5.250000, 12.617932)) end; imgui
@@ -217,8 +224,7 @@ re.on_draw_ui(function()
             if imgui.button("Trailer") then re7utils.teleportPlayer(Vector3f.new(7.704638, -1.626612, 39.341892)) end; imgui
                 .same_line()
             if imgui.button("Green House Entrance") then
-                re7utils.teleportPlayer(Vector3f.new(12.959277, 0.850000,
-                    72.082726))
+                re7utils.teleportPlayer(Vector3f.new(12.959277, 0.850000, 72.082726))
             end
             imgui.tree_pop()
         end
@@ -227,10 +233,10 @@ re.on_draw_ui(function()
 
         if imgui.tree_node("Crates") then
             _, settings.showCratePositions = imgui.checkbox("Show crate positions", settings.showCratePositions)
-            --[[ imgui.text("N = Normal (1 star)")
+            imgui.text("N = Normal (1 star)")
             imgui.text("R = Rare (2 stars)")
             imgui.text("S = Super rare (3 stars)")
-            imgui.text("L = Legendary (4 stars)") ]]
+            imgui.text("L = Legendary (4 stars)")
 
             imgui.spacing()
 
@@ -251,8 +257,6 @@ re.on_draw_ui(function()
             if imgui.button("Restart run") then
                 if restartControl then restartControl:requestRestart() end
             end
-
-            --if imgui.button("Disable enemy AI") then end
 
             if imgui.button("Spawn statue with Albert") then
                 local playerPos = re7utils.get_localplayer():get_Transform():get_Position()
@@ -355,7 +359,6 @@ local function getCrateLabelAndColor(name)
     end
 end
 
--- Actual drawing to the screen.
 re.on_frame(function()
     if not settings.showCratePositions or not next(crates) then return end
 
