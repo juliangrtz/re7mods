@@ -30,7 +30,8 @@ local trumpCards = {
     { id = 51, name = "SPChange", friendly = "Trump Switch", desc = "Discard two trump cards at random, then draw three more cards." },
     { id = 52, name = "SPChange_p", friendly = "Trump Switch+", desc = "Discard one trump card at random, then draw four more cards." },
     -- Enemy-Exclusive Cards, these cannot be added to the inventory!
-    --[[     { id = 61, name = "ShieldAssault", friendly = "Shield Assault", desc = "Remove three Shield cards from your side; opponent’s bet +3 while on table." },
+    --[[
+    { id = 61, name = "ShieldAssault", friendly = "Shield Assault", desc = "Remove three Shield cards from your side; opponent’s bet +3 while on table." },
     { id = 62, name = "ShieldAssault_p", friendly = "Shield Assault+", desc = "Remove two Shield cards; opponent’s bet +5 while on table." },
     { id = 63, name = "Happiness", friendly = "Happiness", desc = "Both players draw one trump card." },
     { id = 66, name = "Desire", friendly = "Desire", desc = "Opponent’s bet +½ the number of trump cards they’re holding while on table." },
@@ -42,27 +43,9 @@ local trumpCards = {
     { id = 68, name = "Escape", friendly = "Escape", desc = "Provided this card is still on the table, you run for your life at the end of the round." },
     { id = 70, name = "Oblivion", friendly = "Oblivion", desc = "Cancels the round and begins a new one instead." },
     { id = 69, name = "DeadSilence", friendly = "Dead Silence", desc = "Opponent cannot draw cards—even via trump effects—while this card is on the table." },
-    { id = 60, name = "Desperation", friendly = "Desperation", desc = "Both players’ bets are raised by 100; opponent cannot draw cards." }, ]]
+    { id = 60, name = "Desperation", friendly = "Desperation", desc = "Both players’ bets are raised by 100; opponent cannot draw cards." },
+    ]]
 }
-
---[[
-local isPlayer = false
-sdk.hook(
-    sdk.find_type_definition("app.CardGameMaster"):get_method("calcSum"),
-    function(args)
-        if args[3].__value == 2 then
-            isPlayer = true
-        end
-    end,
-    function(retval)
-        if isPlayer and always21 then
-            return sdk.create_int32(21)
-        else
-            return retval
-        end
-    end
-)
-]]
 
 local trumpCardComboValues = {}
 for _, v in ipairs(trumpCards) do
@@ -70,6 +53,39 @@ for _, v in ipairs(trumpCards) do
 end
 local selectedTrumpCardIdx = 1
 local currentTrumpCardId = 10
+local cardGameMaster
+local alwaysWin = false
+
+sdk.hook(
+    sdk.find_type_definition("app.CardGameMaster"):get_method("update"),
+    function(args)
+        if cardGameMaster ~= nil then return end
+        cardGameMaster = sdk.to_managed_object(args[2])
+    end,
+    function(_) end
+)
+
+local posType
+sdk.hook(
+    sdk.find_type_definition("app.CardGameMaster"):get_method("calcSum"),
+    function(args)
+        if alwaysWin then
+            posType = sdk.to_int64(args[3]) & 0xFFFFFFFF
+        end
+    end,
+    function(retval)
+        if alwaysWin then
+            -- 0=Stock, 1=Banker, 2=Player
+            if posType == 2 then
+                return sdk.to_ptr(21)
+            elseif posType == 1 then
+                return sdk.to_ptr(666)
+            end
+        end
+        return retval
+    end
+)
+
 
 local function cardGameManager()
     return sdk.get_managed_singleton("app.CardGameManager")
@@ -77,9 +93,16 @@ end
 
 re.on_draw_ui(function()
     if imgui.tree_node("21 Trainer") then
+        imgui.text("Just keep your current hand.")
+        imgui.text("You will always have a score of 21.")
+        local changedAlwaysWin
+        changedAlwaysWin, alwaysWin = imgui.checkbox("Always win", alwaysWin)
+
+        imgui.spacing()
+
         if imgui.tree_node("Trump cards") then
-            local changed, new_index = imgui.combo("Trump card", selectedTrumpCardIdx, trumpCardComboValues)
-            if changed then
+            local changedTrumpCard, new_index = imgui.combo("Trump card", selectedTrumpCardIdx, trumpCardComboValues)
+            if changedTrumpCard then
                 selectedTrumpCardIdx = new_index
                 local entry = trumpCards[selectedTrumpCardIdx]
                 currentTrumpCardId = entry.id
@@ -94,21 +117,30 @@ re.on_draw_ui(function()
             imgui.tree_pop()
         end
 
-        if imgui.tree_node("Rewards") then
+        --[[ if imgui.tree_node("Rewards") then
             if imgui.button("Unlock all rewards") and cardGameManager then
                 for i = 0, 13 do
-                    cardGameManager():setAchievementContinuous(i, true)
+                    cardGameMaster:setAchievementContinuous(i, true)
                 end
             end
 
             if imgui.button("Reset all rewards") and cardGameManager then
-                cardGameManager():changeMaster(2)
+                cardGameMaster:changeMaster(2)
+            end
+
+            imgui.tree_pop()
+        end ]]
+
+
+        if imgui.tree_node("Miscellaneous") then
+            if imgui.button("End game") and cardGameManager then
+                cardGameMaster:setResult()
             end
 
             imgui.tree_pop()
         end
 
-        if imgui.tree_node("Developer Tools") then
+        --[[ if imgui.tree_node("Developer Tools") then
             if imgui.button("Log trump cards") then
                 local itemType = sdk.find_type_definition("app.CardGameItem.ItemType")
                 local fields = itemType:get_fields()
@@ -122,7 +154,7 @@ re.on_draw_ui(function()
                 end
             end
             imgui.tree_pop()
-        end
+        end ]]
 
         imgui.tree_pop()
     end
