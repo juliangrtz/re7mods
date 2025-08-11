@@ -1,5 +1,6 @@
 -- Trainer for the 21 game mode in RE7.
 -- by d3sc0le
+-- v1.0
 
 if reframework:get_game_name() ~= "re7" then
     re.msg("[21 Trainer] Only compatible with RE7!")
@@ -29,32 +30,18 @@ local trumpCards = {
     { id = 50, name = "Gift", friendly = "Love Your Enemy", desc = "Your opponent draws the best possible card for them." },
     { id = 51, name = "SPChange", friendly = "Trump Switch", desc = "Discard two trump cards at random, then draw three more cards." },
     { id = 52, name = "SPChange_p", friendly = "Trump Switch+", desc = "Discard one trump card at random, then draw four more cards." },
-    -- Enemy-Exclusive Cards, these cannot be added to the inventory!
-    --[[
-    { id = 61, name = "ShieldAssault", friendly = "Shield Assault", desc = "Remove three Shield cards from your side; opponent’s bet +3 while on table." },
-    { id = 62, name = "ShieldAssault_p", friendly = "Shield Assault+", desc = "Remove two Shield cards; opponent’s bet +5 while on table." },
-    { id = 63, name = "Happiness", friendly = "Happiness", desc = "Both players draw one trump card." },
-    { id = 66, name = "Desire", friendly = "Desire", desc = "Opponent’s bet +½ the number of trump cards they’re holding while on table." },
-    { id = 67, name = "Desire_p", friendly = "Desire+", desc = "Opponent’s bet +number of trump cards they’re holding while on table." },
-    { id = 64, name = "MindShift", friendly = "Mind Shift", desc = "Opponent loses half of their trump cards at round end; removed if they use two in one turn." },
-    { id = 65, name = "MindShift_p", friendly = "Mind Shift+", desc = "Opponent loses all trump cards at round end; removed if they use three in one turn." },
-    { id = 71, name = "Conjuring", friendly = "Conjure", desc = "Draw three trump cards; your bet +1 while on table." },
-    { id = 72, name = "BlackMagic", friendly = "Black Magic", desc = "Discard half your trump cards and draw best number card; opponent’s bet +10 while on table." },
-    { id = 68, name = "Escape", friendly = "Escape", desc = "Provided this card is still on the table, you run for your life at the end of the round." },
-    { id = 70, name = "Oblivion", friendly = "Oblivion", desc = "Cancels the round and begins a new one instead." },
-    { id = 69, name = "DeadSilence", friendly = "Dead Silence", desc = "Opponent cannot draw cards—even via trump effects—while this card is on the table." },
-    { id = 60, name = "Desperation", friendly = "Desperation", desc = "Both players’ bets are raised by 100; opponent cannot draw cards." },
-    ]]
 }
 
 local trumpCardComboValues = {}
-for _, v in ipairs(trumpCards) do
-    table.insert(trumpCardComboValues, v.friendly)
-end
+for _, v in ipairs(trumpCards) do table.insert(trumpCardComboValues, v.friendly) end
 local selectedTrumpCardIdx = 1
 local currentTrumpCardId = 10
 local cardGameMaster
 local alwaysWin = false
+
+local function cardGameManager()
+    return sdk.get_managed_singleton("app.CardGameManager")
+end
 
 sdk.hook(
     sdk.find_type_definition("app.CardGameMaster"):get_method("update"),
@@ -86,15 +73,10 @@ sdk.hook(
     end
 )
 
-
-local function cardGameManager()
-    return sdk.get_managed_singleton("app.CardGameManager")
-end
-
 re.on_draw_ui(function()
     if imgui.tree_node("21 Trainer") then
         imgui.text("Just keep your current hand.")
-        imgui.text("You will always have a score of 21.")
+        imgui.text("You will always have the best score.")
         local changedAlwaysWin
         changedAlwaysWin, alwaysWin = imgui.checkbox("Always win", alwaysWin)
 
@@ -117,28 +99,22 @@ re.on_draw_ui(function()
             imgui.tree_pop()
         end
 
-        --[[ if imgui.tree_node("Rewards") then
-            if imgui.button("Unlock all rewards") and cardGameManager then
-                for i = 0, 13 do
-                    cardGameMaster:setAchievementContinuous(i, true)
+        --[[ if imgui.tree_node("Miscellaneous") then
+            if imgui.button("Force enemy's death") then
+                local fingerMachine = cardGameManager():get_field("<bankerFingerMachine>k__BackingField")
+                if fingerMachine then
+                    fingerMachine:setBet(5)
                 end
-            end
 
-            if imgui.button("Reset all rewards") and cardGameManager then
-                cardGameMaster:changeMaster(2)
+                local elecMachine = cardGameManager():get_field("<bankerElectricMachine>k__BackingField")
+                if elecMachine then
+                    elecMachine:setElectricDamageLevel(10)
+
+                end
             end
 
             imgui.tree_pop()
         end ]]
-
-
-        if imgui.tree_node("Miscellaneous") then
-            if imgui.button("End game") and cardGameManager then
-                cardGameMaster:setResult()
-            end
-
-            imgui.tree_pop()
-        end
 
         --[[ if imgui.tree_node("Developer Tools") then
             if imgui.button("Log trump cards") then
