@@ -1,5 +1,6 @@
 --Dual AMG in Main Game mod
 --End of Zoe DLC is required to use this
+--WIP
 --v1.0
 --Mar 27, 2025
 --by desc0le

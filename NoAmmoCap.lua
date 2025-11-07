@@ -1,4 +1,4 @@
-if true then return end
+if true then return end -- Enable/Disable here
 
 sdk.hook(
     sdk.find_type_definition("app.WeaponGun"):get_method("get_isLoadNumInfinity"),

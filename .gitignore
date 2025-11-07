@@ -1,1 +1,8 @@
 il2cpp_dump.json
+REFrameworkAPI/
+.vscode/
+vr/
+Health_Bars.lua
+Loadscreen Auto-Continue.lua
+RE7CutsceneSkipper.lua
+tmp/
