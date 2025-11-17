@@ -7,6 +7,7 @@ if not reframework:get_game_name() == "re7" then
     return
 end
 
+local in_imd = false
 local igt
 local hrs, mins, secs, ms
 local stopped
@@ -50,6 +51,7 @@ end
 sdk.hook(
     sdk.find_type_definition("app.InGameTimerForIMD"):get_method("tStart"),
     function(args)
+        in_imd = true
         stopped = false
         igt = sdk.to_managed_object(args[2])
     end,
@@ -90,7 +92,7 @@ end
 sdk.hook(
     sdk.find_type_definition("app.EnemyGeneratorManager"):get_method("requestSpawn"),
     function(_)
-        if not igt then return end
+        if not igt or not in_imd then return end
         enemySpawns = enemySpawns + 1
         if enemySpawns == 3 then
             printSplit("Main Hall", "0:14")
@@ -119,6 +121,7 @@ sdk.hook(
 sdk.hook(
     sdk.find_type_definition("app.Em3600ActionController"):get_method("requestWindowBrakeEffect"),
     function(_)
+        if not in_imd then return end
         printSplit("Marge fight", "4:05")
     end,
     function(r) return r end
