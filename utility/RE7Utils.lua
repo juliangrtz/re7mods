@@ -291,6 +291,35 @@ re7utils.EMDItems = {
     -- TBD
 }
 
+re7utils.Enemies = {
+    em2000 = "Mia",
+    em3000 = "Jack",
+    em3100 = "Marguerite",
+    em3200 = "Lucas",
+    em3300 = "Old Eveline",
+    em3400 = "Zoe",
+    em3550 = "Young Eveline",
+    em3600 = "Marguerite Boss",
+    em4000 = "Molded",
+    em4100 = "4-Legged Molded",
+    em4200 = "Fat Molded",
+    em5200 = "Crow",
+    em5400 = "Insects",
+    em5500 = "Darker Insects",
+    em5600 = "Cockroach",
+    em6000 = "Alan",
+    em6100 = "Police David",
+    em6200 = "Andre",
+    em6500 = "Molded David",
+    em8000 = "Jack Saw Fight",
+    em8100 = "Jack Eyes Boss",
+    em8900 = "Evie Final Form",
+    em9200 = "Pete",
+    em9600 = "???",
+    em9700 = "Dead Andre",
+    em9900 = "Worker David"
+}
+
 --endregion
 
 return re7utils

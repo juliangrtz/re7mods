@@ -7,46 +7,99 @@ if not reframework:get_game_name() == "re7" then
     return
 end
 
---[[ em2000: Mia
-em3000: Jack
-em3100: Marguerite
-em3200: Lucas
-em3300: Old Eveline
-em3400: Zoe
-em3550: Young Eveline
-em3600: Marguerite Fight Boss
-em4000: Molded
-em4100: 4-Legged Molded
-em4200: Fat Molded
-em5200: Crow
-em5400: Insects
-em5500: Darker Insects
-em5600: Cockroach
-em6000: Alan
-em6100: Police David
-em6200: Andre
-em6500: Molded David
-em8000: Jack Saw Fight
-em8100: Jack Eyes Boss
-em8900: Evie Final Form
-em9200: Pete
-em9600: ??
-em9700: Dead Andre
-em9900: "Worker David" ]]
-
+local re7utils = require("utility/RE7Utils")
 local info
 local loc
+
+local function to_table(managedObj)
+    if not managedObj then return nil end
+
+    local t = {}
+    local klass = sdk.find_type_definition(managedObj:get_type_definition():get_full_name())
+    if not klass then return t end
+
+    local fields = klass:get_fields()
+    for i = 0, #fields - 1 do
+        local field = fields[i]
+        local ok, value = pcall(function()
+            return field:get_data(managedObj)
+        end)
+        if ok then
+            if sdk.is_managed_object(value) then
+                t[field:get_name()] = to_table(value)
+            else
+                t[field:get_name()] = value
+            end
+        end
+    end
+
+    return t
+end
+
+local function dumpSpawnInfo(args, spawnInfoPos)
+    local spawnInfo = sdk.to_managed_object(args[spawnInfoPos])
+    local alias = string.lower(tostring(spawnInfo.UnitAlias))
+    local name = re7utils.Enemies[alias]
+    if name then
+        log.debug(name .. " spawned.")
+    else
+        log.debug(alias .. " spawned (unknown enemy type).")
+    end
+    if spawnInfo then
+        local t = to_table(spawnInfo)
+        local filename = "spawns/spawnInfo_" .. alias .. "_" .. os.time() .. "_" .. math.random(0, 10000) .. ".json"
+        json.dump_file(filename, t)
+    else
+        log.debug("Spawn info NULL!")
+    end
+end
+
 sdk.hook(
     sdk.find_type_definition("app.EnemyGeneratorManager"):get_method("requestSpawn"),
     function(args)
-        local spawnInfo = sdk.to_managed_object(args[3])
-        info = spawnInfo
-        local externalLocation = args[4]
-        loc = externalLocation
-        log.debug(spawnInfo.UnitAlias)
+        dumpSpawnInfo(args, 3)
     end,
     nil
 )
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyGenerator"):get_method("addSpawnInfo"),
+    function(args)
+        dumpSpawnInfo(args, 3)
+    end,
+    nil
+)
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyGenerator"):get_method("spawn"),
+    function(args)
+        dumpSpawnInfo(args, 3)
+    end,
+    nil
+)
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyGenerator"):get_method("spawnImplement"),
+    function(args)
+        dumpSpawnInfo(args, 3)
+    end,
+    nil
+)
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyGenerator"):get_method("spawn"),
+    function(args)
+        dumpSpawnInfo(args, 3)
+    end,
+    nil
+)
+
+--[[
+        local g = sdk.to_managed_object(args[3])
+        log.debug("New enemy generator: " .. g.Alias)
+--]]
+
+-- WIP: Won't work.
 
 local function spawnEnemy(enemyType, quantity)
     info.UnitAlias = "Em3600"
