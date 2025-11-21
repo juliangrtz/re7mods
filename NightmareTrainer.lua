@@ -46,7 +46,7 @@ re.on_draw_ui(function()
                 give_scrap()
             end
 
-            imgui.text("Note: Huge values will result in an underflow.")
+            imgui.text("Note: Huge values will result in an overflow.")
             local changed, scrap = imgui.input_text("scrap", scrap, 1 << 0) -- Allow 0123456789.+-*/
 
             if changed then

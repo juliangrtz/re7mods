@@ -60,6 +60,33 @@ function re7utils.get_component(game_object, type_name)
     return game_object:call("getComponent(System.Type)", t)
 end
 
+function re7utils.to_table(managedObj)
+    if not managedObj then return nil end
+
+    local t = {}
+    local klass = sdk.find_type_definition(managedObj:get_type_definition():get_full_name())
+    if not klass then return t end
+
+    local fields = klass:get_fields()
+    for i = 0, #fields - 1 do
+        local field = fields[i]
+        local ok, value = pcall(function()
+            return field:get_data(managedObj)
+        end)
+        if ok then
+            if sdk.is_managed_object(value) then
+                t[field:get_name()] = re7utils.to_table(value)
+            else
+                t[field:get_name()] = value
+            end
+        end
+    end
+
+    return t
+end
+
+-- region Data lookup
+
 re7utils.ItemFriendlyNames = {
     -- Weapons - Melee
     ["Bar"] = "Crowbar",
