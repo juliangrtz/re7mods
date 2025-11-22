@@ -13,13 +13,14 @@ TODO
 [X] Unlock All Items
 [X] Inventory case size modifier
 [X] Stats
+[X] Enemy one hit kill
+[X] Enemy speed
+
 Bindable hotkeys
 Inventory editor (Adding/Removing weapons/key items/treasures/ammo)
 Wallhack
 Enemy scale
-Enemy speed
 Enemy ignore player
-Enemy one hit kill
 Damage modifier
 No recoil
 Game difficulty modifier
@@ -37,6 +38,10 @@ local default_settings = {
     infinite_ammo = false,
     move_speed_multiplier = 1.0,
     player_scale = 1.0,
+    enemy_scale = 1.0,
+    change_enemy_speed = false,
+    enemy_speed_multiplier = 1.0,
+    enemy_insta_kill = false,
     freeze_itembox_count = false,
 }
 local settingsFile = "UltimateRE7Trainer.json"
@@ -105,6 +110,8 @@ local ItemId = {
     "SupplyBoxB", "SupplyBoxOpenedB", "SupplyBoxC", "SupplyBoxOpenedC", "FoundFootage000", "FoundFootage010",
     "FoundFootage020", "FoundFootage030", "FoundFootage040", "FoundFootage050"
 }
+
+local enemies = {}
 
 --endregion
 
@@ -179,6 +186,14 @@ local function changePlayerScale(scale)
     player:get_Transform():set_LocalScale(Vector3f.new(scale, scale, scale))
 end
 
+-- Not working yet.
+local function changeEnemyScale(scale)
+    for _, e in ipairs(enemies) do
+        e:get_GameObject():get_Transform():set_LocalScale(Vector3f.new(scale, scale, scale))
+    end
+end
+
+
 local function addCount(stat, count)
     local achvm = get_singleton("app.Achievement")
     local signature = "addCount(app.Achievement.VariablesTagID)"
@@ -187,7 +202,6 @@ local function addCount(stat, count)
         achvm:call(signature, stat)
     end
 
-    -- Setting values instead of calling addCount() does not work. Idk why...
     --[[
     local val = sdk.create_uint32(value)
     val:set_field("mValue", value)
@@ -247,12 +261,57 @@ sdk.hook(
     end,
     nil
 )
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyActionController"):get_method("spawn"),
+    function(args)
+        table.insert(enemies, sdk.to_managed_object(args[2]))
+    end,
+    nil
+)
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyActionController"):get_method("calcDamageRate"),
+    nil,
+    function(retval)
+        if settings.enemy_insta_kill then
+            local original = sdk.to_float(retval)
+            return sdk.float_to_ptr(original * 100000)
+        else
+            return r
+        end
+    end
+)
+
+-- sdk.hook(
+--     sdk.find_type_definition("app.EnemyActionController"):get_method("selfDie"),
+--     function(args)
+--         table.remove(enemies, sdk.to_managed_object(args[2]))
+--     end,
+--     nil
+-- )
+
+sdk.hook(
+    sdk.find_type_definition("app.EnemyActionController"):get_method("get_latestAnimationSpeedRateForRank"),
+    nil,
+    function(retval)
+        if settings.change_enemy_speed then
+            local original = sdk.to_float(retval)
+            --log.debug(original)
+            return sdk.float_to_ptr(original * settings.enemy_speed_multiplier)
+        else
+            return retval
+        end
+    end
+)
+
 --endregion
 
 --region UI
 re.on_draw_ui(function()
     if imgui.tree_node("RE7 Ultimate Trainer") then
         imgui.text("Version " .. version)
+        imgui.text_colored("Work in progress", 0xFF00FFFF)
         imgui.spacing()
 
         if imgui.tree_node("Player") then
@@ -265,7 +324,7 @@ re.on_draw_ui(function()
             if changedInfAmmo then json.dump_file(settingsFile, settings) end
 
             imgui.text("Movement speed multiplier")
-            changedMovementSpeed, settings.move_speed_multiplier = imgui.slider_float("x speed",
+            changedMovementSpeed, settings.move_speed_multiplier = imgui.slider_float("x speed (player)",
                 settings.move_speed_multiplier, 0.1, 100.0, nil)
             if changedMovementSpeed then json.dump_file(settingsFile, settings) end
 
@@ -294,9 +353,10 @@ re.on_draw_ui(function()
             imgui.spacing()
 
             imgui.text("Scale")
-            changedScale, settings.player_scale = imgui.slider_float("x scale", settings.player_scale, 0.1, 100.0, nil)
+            changedPlayerScale, settings.player_scale = imgui.slider_float("x scale (player)", settings.player_scale, 0.1,
+                100.0, nil)
 
-            if changedScale then
+            if changedPlayerScale then
                 changePlayerScale(settings.player_scale)
                 json.dump_file(settingsFile, settings)
             end
@@ -323,7 +383,41 @@ re.on_draw_ui(function()
         end
 
         if imgui.tree_node("Enemies") then
-            imgui.text_colored("Work in progress", 0xFF00FFFF)
+            imgui.text("Instantly kill enemies when damaging them.")
+            changedEnemyInstaKill, settings.enemy_insta_kill = imgui.checkbox("Insta kill", settings.enemy_insta_kill)
+            if changedEnemyInstaKill then json.dump_file(settingsFile, settings) end
+
+            imgui.text("Whether to change the speed of enemies.")
+            toggleEnemySpeed, settings.change_enemy_speed = imgui.checkbox("Change speed", settings.change_enemy_speed)
+            if toggleEnemySpeed then json.dump_file(settingsFile, settings) end
+
+            imgui.text("Movement speed multiplier")
+            changedMovementSpeed, settings.enemy_speed_multiplier = imgui.slider_float("x speed (enemy)",
+                settings.enemy_speed_multiplier, 0.1, 10.0, nil)
+            if changedMovementSpeed then json.dump_file(settingsFile, settings) end
+
+            if imgui.button("Reset movement speed") then
+                settings.enemy_speed_multiplier = 1.0
+                json.dump_file(settingsFile, settings)
+            end
+
+
+
+            -- imgui.text("Scale")
+            -- changedEnemyScale, settings.enemy_scale = imgui.slider_float("x scale (enemies)", settings.enemy_scale, 0.1,
+            --     100.0, nil)
+
+            -- if changedEnemyScale then
+            --     changeEnemyScale(settings.enemy_scale)
+            --     json.dump_file(settingsFile, settings)
+            -- end
+
+            -- if imgui.button("Reset scale") then
+            --     settings.enemy_scale = 1.0
+            --     changeEnemyScale(1.0)
+            --     json.dump_file(settingsFile, settings)
+            -- end
+
             imgui.tree_pop()
         end
 
@@ -347,7 +441,7 @@ re.on_draw_ui(function()
         end
 
         if imgui.tree_node("Miscellaneous") then
-            if imgui.button("Reset all to default") then
+            if imgui.button("Set default settings") then
                 settings = default_settings
             end
 
@@ -363,6 +457,27 @@ re.on_draw_ui(function()
                         log.debug(t .. " = " .. result)
                     end
                 end
+            end
+
+            if imgui.button("Log data for troubleshooting") then
+                log.debug("--------------------------------------------------")
+                log.debug("RE7 Ultimate Trainer v" .. version)
+                if getLocalPlayer() ~= nil then
+                    log.debug("Is in game.")
+                else
+                    log.debug("Is not in game.")
+                end
+                log.debug("Game: " .. reframework:get_game_name())
+                log.debug("REFramework commit count: " .. reframework:get_commit_count())
+                log.debug("REFramework branch: " .. reframework:get_branch())
+                log.debug("REFramework commit hash: " .. reframework:get_commit_hash())
+                log.debug("REFramework tag: " .. reframework:get_tag())
+                log.debug("REFramework build time: " ..
+                    reframework:get_build_date() .. " - " .. reframework:get_build_time())
+                log.debug("--------------------------------------------------")
+
+                re.msg(
+                    "Data logged. Please spawn the debug console and provide the output when describing your issue. You can spawn it in the menu above (ScriptRunner).")
             end
         end
 
