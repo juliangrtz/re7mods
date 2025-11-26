@@ -1,6 +1,6 @@
 -- Ultimate Trainer for Resident Evil 7
 -- by d3sc0le (Discord: jvl.1an)
-local version = "1.0"
+local version = "1.1"
 
 --[[
 TODO
@@ -15,10 +15,10 @@ TODO
 [X] Stats
 [X] Enemy one hit kill
 [X] Enemy speed
+[X] NoClip/Wallhack
 
 Bindable hotkeys
 Inventory editor (Adding/Removing weapons/key items/treasures/ammo)
-Wallhack
 Enemy scale
 Enemy ignore player
 Damage modifier
@@ -43,6 +43,8 @@ local default_settings = {
     enemy_speed_multiplier = 1.0,
     enemy_insta_kill = false,
     freeze_itembox_count = false,
+    noclip = false,
+    noclip_speed = 0.4,
 }
 local settingsFile = "UltimateRE7Trainer.json"
 local settings = json.load_file(settingsFile) or {}
@@ -111,7 +113,13 @@ local ItemId = {
     "FoundFootage020", "FoundFootage030", "FoundFootage040", "FoundFootage050"
 }
 
-local enemies = {}
+local PlaneType = {
+    None = 0,
+    Ground = 1,
+    Slope = 2,
+    Wall = 3,
+    Ceiling = 4,
+}
 
 --endregion
 
@@ -186,14 +194,6 @@ local function changePlayerScale(scale)
     player:get_Transform():set_LocalScale(Vector3f.new(scale, scale, scale))
 end
 
--- Not working yet.
-local function changeEnemyScale(scale)
-    for _, e in ipairs(enemies) do
-        e:get_GameObject():get_Transform():set_LocalScale(Vector3f.new(scale, scale, scale))
-    end
-end
-
-
 local function addCount(stat, count)
     local achvm = get_singleton("app.Achievement")
     local signature = "addCount(app.Achievement.VariablesTagID)"
@@ -201,23 +201,6 @@ local function addCount(stat, count)
     for _ = 0, count do
         achvm:call(signature, stat)
     end
-
-    --[[
-    local val = sdk.create_uint32(value)
-    val:set_field("mValue", value)
-
-    if achvm.DictCount:ContainsKey(id) then
-        achvm.DictCount:set_Item(id, val)
-    end
-
-    if achvm.DictStats:ContainsKey(id) then
-        achvm.DictStats:set_Item(id, val)
-    end
-
-    if achvm.DictCollect:ContainsKey(id) then
-        achvm.DictCollect:set_Item(id, val)
-    end
-    ]]
 end
 
 --region Hooks
@@ -254,18 +237,10 @@ sdk.hook(
 
 sdk.hook(
     sdk.find_type_definition("app.Achievement"):get_method("addCount(app.Achievement.VariablesTagID)"),
-    function(_)
-        if settings.freeze_itembox_count then
+    function(args)
+        if settings.freeze_itembox_count and args[3] == AchievementTag.CountOfOpenItemBox then
             return sdk.PreHookResult.SKIP_ORIGINAL
         end
-    end,
-    nil
-)
-
-sdk.hook(
-    sdk.find_type_definition("app.EnemyActionController"):get_method("spawn"),
-    function(args)
-        table.insert(enemies, sdk.to_managed_object(args[2]))
     end,
     nil
 )
@@ -278,18 +253,10 @@ sdk.hook(
             local original = sdk.to_float(retval)
             return sdk.float_to_ptr(original * 100000)
         else
-            return r
+            return retval
         end
     end
 )
-
--- sdk.hook(
---     sdk.find_type_definition("app.EnemyActionController"):get_method("selfDie"),
---     function(args)
---         table.remove(enemies, sdk.to_managed_object(args[2]))
---     end,
---     nil
--- )
 
 sdk.hook(
     sdk.find_type_definition("app.EnemyActionController"):get_method("get_latestAnimationSpeedRateForRank"),
@@ -297,7 +264,6 @@ sdk.hook(
     function(retval)
         if settings.change_enemy_speed then
             local original = sdk.to_float(retval)
-            --log.debug(original)
             return sdk.float_to_ptr(original * settings.enemy_speed_multiplier)
         else
             return retval
@@ -306,6 +272,38 @@ sdk.hook(
 )
 
 --endregion
+
+re.on_frame(function()
+    if not settings.noclip then return end
+
+    local player = getLocalPlayer()
+    if not player then return end
+
+    local transform = player:get_Transform()
+    local pos = transform:get_Position()
+
+    local w = reframework:is_key_down(0x57) -- W
+    local s = reframework:is_key_down(0x53) -- S
+    local d = reframework:is_key_down(0x44) -- D
+    local a = reframework:is_key_down(0x41) -- A
+
+    if w then pos.x = pos.x - settings.noclip_speed end
+    if s then pos.x = pos.x + settings.noclip_speed end
+    if d then pos.z = pos.z - settings.noclip_speed end
+    if a then pos.z = pos.z + settings.noclip_speed end
+
+    local controller = getComponent(player, "via.physics.CharacterController")
+    if controller then
+        controller:call("warp")
+    end
+
+    transform:set_Position(pos)
+
+    if controller then
+        controller:call("warp")
+    end
+end)
+
 
 --region UI
 re.on_draw_ui(function()
@@ -316,13 +314,27 @@ re.on_draw_ui(function()
 
         if imgui.tree_node("Player") then
             imgui.text("You'll no longer take damage with this.")
+            local changedGodmode
             changedGodmode, settings.godmode = imgui.checkbox("God mode", settings.godmode)
             if changedGodmode then json.dump_file(settingsFile, settings) end
 
+            local changedInfAmmo
             imgui.text("Ammo count never decreases.")
             changedInfAmmo, settings.infinite_ammo = imgui.checkbox("Infinite ammo", settings.infinite_ammo)
             if changedInfAmmo then json.dump_file(settingsFile, settings) end
 
+            local changedNoclip
+            imgui.text("Move wherever you want.")
+            changedNoclip, settings.noclip = imgui.checkbox("(BETA) Noclip", settings.noclip)
+            if changedNoclip then json.dump_file(settingsFile, settings) end
+
+            local changedNoclipSpeed
+            imgui.text("Noclip speed")
+            changedNoclipSpeed, settings.noclip_speed = imgui.slider_float("delta x,y,z",
+                settings.noclip_speed, 0.1, 1.0, nil)
+            if changedNoclipSpeed then json.dump_file(settingsFile, settings) end
+
+            local changedMovementSpeed
             imgui.text("Movement speed multiplier")
             changedMovementSpeed, settings.move_speed_multiplier = imgui.slider_float("x speed (player)",
                 settings.move_speed_multiplier, 0.1, 100.0, nil)
@@ -353,6 +365,7 @@ re.on_draw_ui(function()
             imgui.spacing()
 
             imgui.text("Scale")
+            local changedPlayerScale
             changedPlayerScale, settings.player_scale = imgui.slider_float("x scale (player)", settings.player_scale, 0.1,
                 100.0, nil)
 
@@ -384,14 +397,18 @@ re.on_draw_ui(function()
 
         if imgui.tree_node("Enemies") then
             imgui.text("Instantly kill enemies when damaging them.")
+            local changedEnemyInstaKill
             changedEnemyInstaKill, settings.enemy_insta_kill = imgui.checkbox("Insta kill", settings.enemy_insta_kill)
             if changedEnemyInstaKill then json.dump_file(settingsFile, settings) end
 
             imgui.text("Whether to change the speed of enemies.")
+            imgui.text("This won't work for all enemies and bosses!")
+            local toggleEnemySpeed
             toggleEnemySpeed, settings.change_enemy_speed = imgui.checkbox("Change speed", settings.change_enemy_speed)
             if toggleEnemySpeed then json.dump_file(settingsFile, settings) end
 
             imgui.text("Movement speed multiplier")
+            local changedMovementSpeed
             changedMovementSpeed, settings.enemy_speed_multiplier = imgui.slider_float("x speed (enemy)",
                 settings.enemy_speed_multiplier, 0.1, 10.0, nil)
             if changedMovementSpeed then json.dump_file(settingsFile, settings) end
@@ -401,31 +418,25 @@ re.on_draw_ui(function()
                 json.dump_file(settingsFile, settings)
             end
 
-
-
-            -- imgui.text("Scale")
-            -- changedEnemyScale, settings.enemy_scale = imgui.slider_float("x scale (enemies)", settings.enemy_scale, 0.1,
-            --     100.0, nil)
-
-            -- if changedEnemyScale then
-            --     changeEnemyScale(settings.enemy_scale)
-            --     json.dump_file(settingsFile, settings)
-            -- end
-
-            -- if imgui.button("Reset scale") then
-            --     settings.enemy_scale = 1.0
-            --     changeEnemyScale(1.0)
-            --     json.dump_file(settingsFile, settings)
-            -- end
-
             imgui.tree_pop()
         end
 
         if imgui.tree_node("Stats") then
+            local gameMngr = sdk.get_managed_singleton("app.GameManager")
+            if gameMngr then
+                imgui.text("Current rank: " .. gameMngr:getGameRank() .. "/9")
+            end
+
+            local changedItemBoxCount
             changedItemBoxCount, settings.freeze_itembox_count = imgui.checkbox("Freeze item box open count",
                 settings.freeze_itembox_count)
             if changedItemBoxCount then
                 json.dump_file(settingsFile, settings)
+            end
+
+            if imgui.button("Set restart count to 0") then
+                local gameMngr = get_singleton("app.GameManager")
+                gameMngr.RestartCount = sdk.create_int32(0)
             end
 
             if imgui.button("Add antique coins") then
