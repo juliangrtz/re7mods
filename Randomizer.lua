@@ -1,6 +1,9 @@
 -- RE7 Randomizer randomizing various aspects of the game.
+-- Work in progress.
 -- by d3sc0le (Discord: jvl.1an)
 -- v1.0
+
+if true then return end
 
 if not reframework:get_game_name() == "re7" then
     re.msg("[RE7 Randomizer] Only compatible with RE7!")
@@ -9,32 +12,6 @@ end
 
 local re7utils = require("utility/RE7Utils")
 local info
-local loc
-
-local function to_table(managedObj)
-    if not managedObj then return nil end
-
-    local t = {}
-    local klass = sdk.find_type_definition(managedObj:get_type_definition():get_full_name())
-    if not klass then return t end
-
-    local fields = klass:get_fields()
-    for i = 0, #fields - 1 do
-        local field = fields[i]
-        local ok, value = pcall(function()
-            return field:get_data(managedObj)
-        end)
-        if ok then
-            if sdk.is_managed_object(value) then
-                t[field:get_name()] = to_table(value)
-            else
-                t[field:get_name()] = value
-            end
-        end
-    end
-
-    return t
-end
 
 local function dumpSpawnInfo(args, spawnInfoPos)
     local spawnInfo = sdk.to_managed_object(args[spawnInfoPos])
@@ -46,7 +23,7 @@ local function dumpSpawnInfo(args, spawnInfoPos)
         log.debug(alias .. " spawned (unknown enemy type).")
     end
     if spawnInfo then
-        local t = to_table(spawnInfo)
+        local t = re7utils.to_table(spawnInfo)
         local filename = "spawns/spawnInfo_" .. alias .. "_" .. os.time() .. "_" .. math.random(0, 10000) .. ".json"
         json.dump_file(filename, t)
     else
@@ -54,16 +31,14 @@ local function dumpSpawnInfo(args, spawnInfoPos)
     end
 end
 
-sdk.hook(
-    sdk.find_type_definition("app.EnemyGeneratorManager"):get_method("requestSpawn"),
-    function(args)
-        dumpSpawnInfo(args, 3)
-    end,
-    nil
-)
+local function dumpEnemyPool(args)
+    local this = sdk.to_managed_object(args[2])
+    local filename = "spawns/enemyPool_" .. os.time() .. "_" .. math.random(0, 10000) .. ".json"
+    json.dump_file(filename, re7utils.to_table(this:get_field("<poolInstance>k__BackingField")))
+end
 
 sdk.hook(
-    sdk.find_type_definition("app.EnemyGenerator"):get_method("addSpawnInfo"),
+    sdk.find_type_definition("app.EnemyActionController"):get_method("doAwake"),
     function(args)
         dumpSpawnInfo(args, 3)
     end,

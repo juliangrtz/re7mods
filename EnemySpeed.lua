@@ -2,7 +2,7 @@
 -- Made for uhTrance <3
 -- by d3sc0le (Discord: jvl.1an)
 
-local changeSpeed = true
+local changeSpeed = false
 local speed = 2.0
 
 local function hook(clazz, func, pre, post)
@@ -27,6 +27,44 @@ hook(
         end
     end
 )
+
+-- Evie Shock Waves
+--[[
+Em3500Shell
+1 = via.physics.RequestSetCollider
+2 = app.Collision.HitController
+3 = app.Em3500Shell
+4 = app.Collision.CalculateAttack
+5 = app.EffectSphereCollider
+]]
+-- local didIt = false
+-- hook(
+--     "app.Collision.HitController",
+--     "registerDamageHistory(via.GameObject, app.Collision.AttackUserData)",
+--     function(args)
+--         if didIt then return end
+--         didIt = true
+--         local g = sdk.to_managed_object(args[3])
+--         local c = get_components(g)
+--         for i = 1, #c do
+--             log.debug(i .. " = " .. c[i]:get_type_definition():get_full_name())
+--         end
+--     end,
+--     nil
+-- )
+
+-- local em3500Shell
+-- local simpleEffectContainer
+-- hook(
+--     "app.Em3500Shell.<>c__DisplayClass3_0",
+--     "<doStart>b__0(app.ISimpleEffectContainer)",
+--     function(args)
+--         em3500Shell = sdk.to_managed_object(args[2])
+--         simpleEffectContainer = sdk.to_managed_object(args[3])
+--         log.debug("Got Em3500Shell")
+--     end,
+--     nil
+-- )
 
 -- Evie Phase 1
 hook(
@@ -81,8 +119,6 @@ hook(
         end
     end
 )
-
-
 
 re.on_draw_ui(function()
     if imgui.tree_node("Enemy Speed Changer") then

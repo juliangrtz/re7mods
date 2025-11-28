@@ -119,4 +119,18 @@ function utils.get_singleton(name)
     return s
 end
 
+function utils.get_transform(game_object)
+    return game_object:call("get_Transform")
+end
+
+function utils.print_components(game_object)
+    local transform = utils.get_transform(game_object)
+    if not transform then return end
+
+    local components = game_object:call("get_Components")
+    for i = 1, #components do
+        log.debug("Component " .. i .. ": " .. components[i]:get_type_definition():get_full_name())
+    end
+end
+
 return utils
