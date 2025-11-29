@@ -91,6 +91,18 @@ function utils.to_table(managedObj)
     return t
 end
 
+--[[
+sdk.hook(
+    sdk.find_type_definition(""):get_method(""),
+    function(args)
+
+    end,
+    function(retval)
+        return retval
+    end
+)
+]]
+
 function utils.hook(klass, func, pre, post)
     sdk.hook(
         sdk.find_type_definition(klass):get_method(func),
