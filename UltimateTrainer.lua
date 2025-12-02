@@ -238,7 +238,7 @@ sdk.hook(
 sdk.hook(
     sdk.find_type_definition("app.Achievement"):get_method("addCount(app.Achievement.VariablesTagID)"),
     function(args)
-        if settings.freeze_itembox_count and args[3] == AchievementTag.CountOfOpenItemBox then
+        if settings.freeze_itembox_count and sdk.to_int64(args[3]) == AchievementTag.CountOfOpenItemBox then
             return sdk.PreHookResult.SKIP_ORIGINAL
         end
     end,
