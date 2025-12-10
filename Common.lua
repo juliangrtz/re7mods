@@ -145,4 +145,27 @@ function utils.print_components(game_object)
     end
 end
 
+-- Author: praydog
+function utils.generate_statics(typename, no_reverse)
+    local t = sdk.find_type_definition(typename)
+    local fields = t:get_fields()
+    local enum = {}
+    local names = {}
+
+    for _, field in ipairs(fields) do
+        if field:is_static() then
+            local raw_value = field:get_data(nil)
+            if raw_value ~= nil then
+                local name = field:get_name()
+                enum[name] = raw_value
+                if not no_reverse then
+                    enum[raw_value] = name
+                end
+                table.insert(names, name)
+            end
+        end
+    end
+    return enum, names
+end
+
 return utils

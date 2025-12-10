@@ -5,16 +5,16 @@ re7 mod ideas
 - ethan must die RNG manipulation ✔️
 - skip phone calls ✔️
 - no screen blood https://residentevilmodding.boards.net/thread/11859/disable-screen-blood ✔️
+- silent ethan https://residentevilmodding.boards.net/thread/16300/silent-ethan ✔️
+- madhouse++ mode ✔️
+- 21 RNG manipulation ✔️
 - get access to all DLC weapons and items in item box https://residentevilmodding.boards.net/thread/15880/main-game-weapons-starting-chest
 - randomizer
 - ethan must die other bosses (jack3, eveline boss, mutated mia)
 - ethan must die QoL features https://residentevilmodding.boards.net/thread/15861/ethan-die-mods
-- madhouse+ mode
 - skip whole ship section
 - multiplayer mode (holdout like in pd2?)
-- 21 RNG manipulation
 - ability to discard non-discardable items again https://residentevilmodding.boards.net/thread/18107/ability-discard-items-again
-- silent ethan https://residentevilmodding.boards.net/thread/16300/silent-ethan
 - no interaction prompts https://residentevilmodding.boards.net/thread/15357/interaction-prompts
 - increase the ammo capacity of 
     - the unlockable Albert Wesker Model 01 Handgun from default 3 to 9 https://residentevilmodding.boards.net/thread/15066/mod-requests-re7-vii-biohazard
