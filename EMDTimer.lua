@@ -1,6 +1,6 @@
--- Timer for the Ethan Must Die game mode. It's displayed in the top left corner of the screen.
+-- Timer for the Ethan Must Die game mode.
 -- by d3sc0le (Discord: jvl.1an)
--- v1.1
+-- v1.2
 
 if not reframework:get_game_name() == "re7" then
     re.msg("[Ethan Must Die Timer] Only compatible with RE7!")
@@ -158,7 +158,7 @@ local function getCoordinates()
 end
 
 re.on_frame(function()
-    if not igt then return end
+    if not igt or not settings.enabled then return end
 
     if not stopped then
         hrs = igt:call("getCurrentHours") or 0
